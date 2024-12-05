@@ -25,7 +25,7 @@ class Cliente
         $this->correo = $correo;
         $this->telefono = $telefono;
         $this->fechaNacimiento = $fechaNacimiento;
-        $this->password = password_hash($password, PASSWORD_BCRYPT);
+        $this->password = $password;
     }
 
     // Getters y setters
@@ -86,7 +86,7 @@ class Cliente
 
     public function setPassword(string $password): void
     {
-        $this->password = password_hash($password, PASSWORD_BCRYPT);
+        $this->password = $password;
     }
 
     public function validarDatos(array $datos): array {

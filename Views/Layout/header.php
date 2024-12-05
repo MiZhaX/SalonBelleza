@@ -7,5 +7,4 @@
 </head>
 <body>
     <h1>Salón de belleza</h1>
-    <h2>Bienvenido al salón de belleza.</h2>
     

@@ -31,19 +31,17 @@ class ClienteService
     // Crear un cliente
     public function crearCliente(array $datos): bool
     {
-        // Cifrar la contraseña usando password_hash
-        $passwordCifrada = password_hash($datos['password'], PASSWORD_BCRYPT);
-
         $cliente = new Cliente(
             nombre: $datos['nombre'],
             correo: $datos['correo'],
             telefono: $datos['telefono'],
             fechaNacimiento: $datos['fecha_nacimiento'],
-            password: $passwordCifrada
+            password: $datos['password']
         );
 
         return $this->clienteRepository->insertar($cliente);
     }
+
 
     // Actualizar un cliente
     public function actualizarCliente(array $datos): bool
