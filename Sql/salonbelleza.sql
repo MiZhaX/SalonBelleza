@@ -1,5 +1,5 @@
 -- Active: 1731922560437@@127.0.0.1@3306@salonbelleza
-DROP DATABASE salonbelleza;
+DROP DATABASE IF EXISTS salonbelleza;
 CREATE DATABASE IF NOT EXISTS salonbelleza;
 SET NAMES utf8mb4;
 USE salonbelleza;
@@ -31,14 +31,17 @@ CREATE TABLE IF NOT EXISTS empleados (
     nombre          VARCHAR(100) NOT NULL,
     correo          VARCHAR(255) NOT NULL,
     telefono        VARCHAR(15) NOT NULL,
-    password        VARCHAR(255) NOT NULL, -- Contraseña encriptada para iniciar sesión
-    rol             ENUM('empleado', 'administrador') DEFAULT 'empleado',
-    id_especialidad INT NOT NULL, -- Relación con la especialidad (solo una especialidad por empleado)
+    password        VARCHAR(255) NOT NULL, 
+    id_especialidad INT NOT NULL, 
     CONSTRAINT pk_empleados PRIMARY KEY (id),
     UNIQUE KEY correo_UNIQUE (correo),
     UNIQUE KEY telefono_UNIQUE (telefono),
     CONSTRAINT fk_empleados_especialidad FOREIGN KEY (id_especialidad) REFERENCES especialidades (id) ON DELETE CASCADE
 );
+
+-- Crear el empleado administrador
+INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
+('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
 
 -- Tabla de servicios
 CREATE TABLE IF NOT EXISTS servicios (
@@ -89,7 +92,8 @@ INSERT INTO especialidades (nombre) VALUES
 ('Barbero'),
 ('Depilación'),
 ('Maquillaje'),
-('Asesoría de Imagen');
+('Asesoría de Imagen'),
+('Administrador');
 
 -- Insertar para los servicios
 INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES 

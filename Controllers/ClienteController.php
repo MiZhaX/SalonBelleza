@@ -84,8 +84,7 @@ class ClienteController
 
             $cliente = $this->clienteService->obtenerClientePorCorreo($datos['correo']);
 
-            echo("<script>console.log('PHP: " . $datos['password'] . "');</script>");
-            echo("<script>console.log('PHP: " . $cliente->getPassword() . "');</script>");
+            var_dump(password_verify($datos['password'], $cliente->getPassword()));
 
             if ($cliente && password_verify($datos['password'], $cliente->getPassword())) {
                 // Iniciar sesión

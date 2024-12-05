@@ -1,4 +1,4 @@
-<h2>Iniciar sesión</h2>
+<h2>Iniciar sesión como cliente</h2>
 <form method="POST" action="<?=BASE_URL?>Cliente/iniciarSesion">
     <label for="correo">Correo:</label>
     <input type="email" id="correo" name="correo" required>
