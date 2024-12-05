@@ -1,0 +1,23 @@
+{
+    "name": "mishael-bonel/salon-belleza",
+    "description": "Sitio para la gestión de un salón de belleza",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Mishael\\Agenda\\": "./",
+            "Controllers\\": "./Controllers",
+            "Models\\": "./Models",
+            "Lib\\": "./Lib",
+            "Repositories\\": "./Repositories",
+            "Services\\": "./Services"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mishael Bonel",
+            "email": "mbonelortiz@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
