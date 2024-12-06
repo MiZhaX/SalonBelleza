@@ -25,39 +25,49 @@ class EmpleadoController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = $_POST;
+            $errores = [];
 
-            if (!isset($datos['correo'], $datos['password'])) {
-                echo "Faltan datos requeridos";
-                return;
+            // Verificar si los datos requeridos están presentes
+            if (empty($datos['correo'])) {
+                $errores[] = "El correo es obligatorio.";
             }
 
-            $empleado = $this->empleadoService->obtenerEmpleadoPorCorreo($datos['correo']);
+            if (empty($datos['password'])) {
+                $errores[] = "La contraseña es obligatoria.";
+            }
 
-            if ($empleado && password_verify($datos['password'], $empleado->getPassword())) {
-                // Iniciar sesión
-                session_start();
-                $_SESSION['tipo'] = "empleado";
-                $_SESSION['nombre'] = $empleado->getNombre();
-                $_SESSION['id'] = $empleado->getId();
-                $_SESSION['especialidad'] = $empleado->getidEspecialidad();
+            if (empty($errores)) {
+                // Intentar obtener al empleado
+                $empleado = $this->empleadoService->obtenerEmpleadoPorCorreo($datos['correo']);
 
-                // Redirigir al dashboard del administrador si es administrador
-                if ($_SESSION['especialidad'] === 11) {
-                    $this->pages->render('Empleado/adminDashboard');
+                if ($empleado && password_verify($datos['password'], $empleado->getPassword())) {
+                    // Iniciar sesión
+                    session_start();
+                    $_SESSION['tipo'] = $empleado->getIdEspecialidad() == 11 ? "administrador" : "empleado";
+                    $_SESSION['nombre'] = $empleado->getNombre();
+                    $_SESSION['id'] = $empleado->getId();
+                    $_SESSION['especialidad'] = $empleado->getIdEspecialidad();
+
+                    // Redirigir al layout principal
+                    $this->pages->render('Layout/principal');
+                    exit;
                 } else {
-                    $this->pages->render('Empleado/empleadoDashboard');
+                    $errores[] = "Correo o contraseña incorrectos.";
                 }
-                exit;
-            } else {
-                echo "Correo o contraseña incorrectos";
             }
+
+            // Mostrar la página de inicio de sesión con errores si los hay
+            $this->pages->render('Empleado/iniciarSesion', ['errores' => $errores]);
         } else {
+            // Renderizar la página de inicio de sesión sin errores
             $this->pages->render('Empleado/iniciarSesion');
         }
     }
 
-    public function cerrarSesion(){
-        session_start(); 
+
+    public function cerrarSesion()
+    {
+        session_start();
         session_unset();
         session_destroy();
 
@@ -65,49 +75,62 @@ class EmpleadoController
     }
 
     public function registrarEmpleado(): void
-{
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Recoger los datos del formulario
-        $datos = $_POST;
+    {
+        $errores = [];
+        $mensajeExito = '';
 
-        // Validación básica
-        if (!isset($datos['nombre'], $datos['correo'], $datos['telefono'], $datos['especialidad'], $datos['password'])) {
-            echo "Faltan datos requeridos";
-            return;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Saneamiento de datos
+            $datosSanitizados = [
+                'nombre' => filter_var(trim($_POST['nombre']), FILTER_SANITIZE_STRING),
+                'correo' => filter_var(trim($_POST['correo']), FILTER_SANITIZE_EMAIL),
+                'telefono' => filter_var(trim($_POST['telefono']), FILTER_SANITIZE_STRING),
+                'especialidad' => intval($_POST['especialidad']),
+                'password' => trim($_POST['password']),
+            ];
+
+            // Validar los datos en el modelo
+            $empleado = new Empleado(
+                nombre: $datosSanitizados['nombre'],
+                correo: $datosSanitizados['correo'],
+                telefono: $datosSanitizados['telefono'],
+                password: $datosSanitizados['password'], // Sin cifrar aún
+                idEspecialidad: $datosSanitizados['especialidad']
+            );
+
+            $errores = $empleado->validarDatos();
+
+            // Verificar si el correo ya está registrado
+            $empleadoExistente = $this->empleadoService->obtenerEmpleadoPorCorreo($datosSanitizados['correo']);
+            if ($empleadoExistente) {
+                $errores[] = "El correo ya está registrado.";
+            }
+
+            // Continuar si no hay errores
+            if (empty($errores)) {
+                // Cifrar la contraseña
+                $passwordCifrada = password_hash($datosSanitizados['password'], PASSWORD_BCRYPT);
+                $empleado->setPassword($passwordCifrada);
+
+                // Intentar crear el empleado
+                $resultado = $this->empleadoService->crearEmpleado($empleado);
+
+                if ($resultado) {
+                    $mensajeExito = "Empleado registrado con éxito.";
+                } else {
+                    $errores[] = "Hubo un problema al registrar el empleado. Inténtalo de nuevo.";
+                }
+            }
         }
 
-        // Validar que el correo y el teléfono no estén ya registrados
-        $empleadoExistente = $this->empleadoService->obtenerEmpleadoPorCorreo($datos['correo']);
-        if ($empleadoExistente) {
-            echo "El correo ya está registrado.";
-            return;
-        }
-
-        // Cifrar la contraseña
-        $passwordCifrada = password_hash($datos['password'], PASSWORD_BCRYPT);
-
-        // Crear el empleado
-        $empleado = new Empleado(
-            nombre: $datos['nombre'],
-            correo: $datos['correo'],
-            telefono: $datos['telefono'],
-            password: $passwordCifrada,
-            idEspecialidad: $datos['especialidad']
-        );
-
-        // Llamar al servicio para insertar el empleado
-        $resultado = $this->empleadoService->crearEmpleado($empleado);
-
-        // Verificar el resultado
-        if ($resultado) {
-            echo "Empleado registrado con éxito.";
-        } else {
-            echo "Hubo un error al registrar el empleado.";
-        }
-    } else {
+        // Obtener las especialidades para el formulario
         $especialidades = $this->especialidadService->obtenerTodas();
 
-        $this->pages->render('Empleado/agregarEmpleado', ['especialidades' => $especialidades]);
+        // Renderizar la vista con errores, mensaje de éxito o el formulario
+        $this->pages->render('Empleado/agregarEmpleado', [
+            'errores' => $errores,
+            'mensajeExito' => $mensajeExito,
+            'especialidades' => $especialidades
+        ]);
     }
-}
 }
