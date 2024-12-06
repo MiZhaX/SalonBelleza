@@ -15,6 +15,27 @@ class EmpleadoRepository
         $this->conexion = new BaseDatos();
     }
 
+    public function obtenerTodos(): array
+    {
+        $sql = "SELECT * FROM empleados";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute();
+
+        $empleados = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $empleados[] = new Empleado(
+                $row['id'],
+                $row['nombre'],
+                $row['correo'],
+                $row['telefono'],
+                $row['password'],
+                $row['id_especialidad']
+            );
+        }
+
+        return $empleados;
+    }
+
     public function obtenerPorCorreo(string $correo): ?Empleado
     {
         $sql = "SELECT * FROM empleados WHERE correo = :correo";
@@ -36,6 +57,29 @@ class EmpleadoRepository
         }
 
         return null;
+    }
+
+    public function obtenerPorId(int $id): ?Empleado
+    {
+        $query = "SELECT * FROM empleados WHERE id = :id";
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            $empleado = new Empleado();
+            $empleado->setId($resultado['id']);
+            $empleado->setNombre($resultado['nombre']);
+            $empleado->setCorreo($resultado['correo']);
+            $empleado->setTelefono($resultado['telefono']);
+            $empleado->setIdEspecialidad($resultado['id_especialidad']);
+            $empleado->setPassword($resultado['password']);
+            return $empleado;
+        }
+
+        return null; // Si no se encuentra el empleado
     }
 
     public function insertar(Empleado $empleado): bool
