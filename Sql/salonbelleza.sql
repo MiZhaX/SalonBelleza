@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS citas (
     hora_cita       TIME NOT NULL,
     precio_total    DECIMAL(10, 2) NOT NULL,
     CONSTRAINT pk_citas PRIMARY KEY (id),
+    estado           ENUM('pendiente', 'completada', 'cancelada') DEFAULT 'pendiente',
     CONSTRAINT fk_citas_clientes FOREIGN KEY (id_cliente) REFERENCES clientes (id) ON DELETE CASCADE,
     CONSTRAINT fk_citas_empleados FOREIGN KEY (id_empleado) REFERENCES empleados (id) ON DELETE CASCADE,
     CONSTRAINT fk_citas_servicios FOREIGN KEY (id_servicio) REFERENCES servicios (id) ON DELETE CASCADE

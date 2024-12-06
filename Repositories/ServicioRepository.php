@@ -8,7 +8,7 @@ use PDO;
 
 class ServicioRepository
 {
-    private PDO $conexion;
+    private BaseDatos $conexion;
 
     public function __construct()
     {
