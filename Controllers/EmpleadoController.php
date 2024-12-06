@@ -94,7 +94,7 @@ class EmpleadoController
                 nombre: $datosSanitizados['nombre'],
                 correo: $datosSanitizados['correo'],
                 telefono: $datosSanitizados['telefono'],
-                password: $datosSanitizados['password'], // Sin cifrar aún
+                password: $datosSanitizados['password'], 
                 idEspecialidad: $datosSanitizados['especialidad']
             );
 

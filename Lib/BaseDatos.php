@@ -33,28 +33,6 @@
 
             public function prepare($pre){
                 return $this->conexion->prepare($pre);
-            }
-
-            // public function consulta(string $consultaSQL): void{
-            //     $this->resultado = $this->conexion->query($consultaSQL);
-            // }
-
-            // public function extraer_registro(): mixed {
-            //     return ($fila = $this->resultado->fetch(PDO::FETCH_ASSOC))? $fila:false;
-            // }
-
-            // public function extraer_todos(): array{
-            //     return $this->resultado->fetchAll(PDO::FETCH_ASSOC);
-            // }       
-            
-            // public function consultaPreparada(string $sql, array $params): bool {
-            //     try {
-            //         $stmt = $this->conexion->prepare($sql);
-            //         return $stmt->execute($params);
-            //     } catch (PDOException $e) {
-            //         echo "Error al ejecutar la consulta: " . $e->getMessage();
-            //         return false;
-            //     }
-            // }            
+            }          
     }
 ?>
