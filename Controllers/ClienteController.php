@@ -38,6 +38,11 @@ class ClienteController
             // Validar los datos en el modelo
             $errores = $this->cliente->validarDatos($datosSanitizados);
 
+            $clienteExistente = $this->clienteService->obtenerClientePorCorreo($datosSanitizados['correo']);
+            if ($clienteExistente) {
+                $errores[] = "El correo ya está registrado.";
+            }
+
             if (empty($errores)) {
                 // Cifrar la contraseña antes de guardarla
                 $passwordHashed = password_hash($datosSanitizados['password'], PASSWORD_BCRYPT);

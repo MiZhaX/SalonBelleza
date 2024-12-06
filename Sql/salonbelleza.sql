@@ -5,6 +5,7 @@ SET NAMES utf8mb4;
 USE salonbelleza;
 
 -- Tabla de clientes
+DROP TABLE IF EXISTS clientes;
 CREATE TABLE IF NOT EXISTS clientes (
     id              INT AUTO_INCREMENT NOT NULL,
     nombre          VARCHAR(100) NOT NULL,
@@ -13,11 +14,11 @@ CREATE TABLE IF NOT EXISTS clientes (
     fecha_nacimiento DATE DEFAULT NULL,
     password        VARCHAR(255) NOT NULL,
     CONSTRAINT pk_clientes PRIMARY KEY (id),
-    UNIQUE KEY correo_UNIQUE (correo),
-    UNIQUE KEY telefono_UNIQUE (telefono)
+    UNIQUE KEY correo_UNIQUE (correo)
 );
 
 -- Tabla de especialidades
+DROP TABLE IF EXISTS especialidades;
 CREATE TABLE IF NOT EXISTS especialidades (
     id              INT AUTO_INCREMENT NOT NULL,
     nombre          VARCHAR(100) NOT NULL,
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS especialidades (
 );
 
 -- Tabla de empleados
+DROP TABLE IF EXISTS empleados;
 CREATE TABLE IF NOT EXISTS empleados (
     id              INT AUTO_INCREMENT NOT NULL,
     nombre          VARCHAR(100) NOT NULL,
@@ -35,13 +37,8 @@ CREATE TABLE IF NOT EXISTS empleados (
     id_especialidad INT NOT NULL, 
     CONSTRAINT pk_empleados PRIMARY KEY (id),
     UNIQUE KEY correo_UNIQUE (correo),
-    UNIQUE KEY telefono_UNIQUE (telefono),
     CONSTRAINT fk_empleados_especialidad FOREIGN KEY (id_especialidad) REFERENCES especialidades (id) ON DELETE CASCADE
 );
-
--- Crear el empleado administrador
-INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
-('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
 
 -- Tabla de servicios
 DROP TABLE IF EXISTS servicios;
@@ -118,3 +115,7 @@ INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES
 ('Maquillaje Social', 40.00, 60, 9),   -- Maquillaje
 ('Maquillaje de Novia', 80.00, 120, 9),-- Maquillaje
 ('Asesoría de Imagen', 60.00, 90, 10); -- Asesoría de Imagen
+
+-- Crear el empleado administrador
+INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
+('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
