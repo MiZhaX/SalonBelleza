@@ -1,9 +1,29 @@
-<h2>Bienvenido al salón de belleza.</h2>
-<h2>¿ERES CLIENTE?</h2>
-<li><a href="<?=BASE_URL?>Cliente/crearCliente">Registrarse como cliente</a></li>
-<li><a href="<?=BASE_URL?>Cliente/iniciarSesion">Iniciar sesión como cliente</a></li>
+<?php if (!isset($_SESSION['id'])): ?>
+    <h2>Bienvenido al salón de belleza.</h2>
+    <h2>¿ERES CLIENTE?</h2>
+    <ul>
+        <li><a href="<?= BASE_URL ?>Cliente/crearCliente">Registrarse como cliente</a></li>
+        <li><a href="<?= BASE_URL ?>Cliente/iniciarSesion">Iniciar sesión como cliente</a></li>
+    </ul>
 
-<h2>¿ERES EMPLEADO?</h2>
-<li><a href="<?=BASE_URL?>Empleado/iniciarSesion">Iniciar sesión como empleado</a></li>
+    <h2>¿ERES EMPLEADO?</h2>
+    <ul>
+        <li><a href="<?= BASE_URL ?>Empleado/iniciarSesion">Iniciar sesión como empleado</a></li>
+    </ul>
 
-
+<?php else: ?>
+    <h2>Bienvenido, <?= htmlspecialchars($_SESSION['nombre']) ?>.</h2>
+    <ul>
+        <?php if ($_SESSION['tipo'] === 'administrador'): ?>
+            <li><a href="<?= BASE_URL ?>Empleado/registrarEmpleado">Registrar nuevo empleado</a></li>
+            <li><a href="<?= BASE_URL ?>Empleados/verEmpleados">Ver empleados</a></li>
+        <?php elseif ($_SESSION['tipo'] === 'empleado'): ?>
+            <li><a href="<?= BASE_URL ?>Empleado/misOpciones">Mis opciones</a></li>
+        <?php elseif ($_SESSION['tipo'] === 'cliente'): ?>
+            <li><a href="<?= BASE_URL ?>Cliente/verCitas">Ver mis citas</a></li>
+            <li><a href="<?= BASE_URL ?>Cliente/reservarCita">Reservar cita</a></li>
+        <?php endif; ?>
+        <br>
+        <a href="<?= BASE_URL . ($_SESSION['tipo'] === 'cliente' ? 'Cliente/cerrarSesion' : 'Empleado/cerrarSesion') ?>">Cerrar sesión</a>
+    </ul>
+<?php endif; ?>

@@ -1,5 +1,14 @@
 <h2>Iniciar sesión como cliente</h2>
-<form method="POST" action="<?=BASE_URL?>Cliente/iniciarSesion">
+<!-- Mostrar errores si los hay -->
+<?php if (isset($errores) && !empty($errores)): ?>
+    <ul style="color: red;">
+        <?php foreach ($errores as $error): ?>
+            <li><?= htmlspecialchars($error) ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
+<form method="POST" action="<?= BASE_URL ?>Cliente/iniciarSesion">
     <label for="correo">Correo:</label>
     <input type="email" id="correo" name="correo" required>
     

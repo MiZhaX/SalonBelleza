@@ -103,7 +103,7 @@ class Empleado
             $errores[] = "El correo electrónico no es válido.";
         }
 
-        if (empty($this->telefono) || !preg_match('/^\+?\d{10,15}$/', $this->telefono)) {
+        if (empty($this->telefono) || !preg_match('/^\+?\d{9}$/', $this->telefono)) {
             $errores[] = "El teléfono no es válido.";
         }
 

@@ -77,25 +77,43 @@ class ClienteController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = $_POST;
 
-            if (!isset($datos['correo'], $datos['password'])) {
-                echo "Faltan datos requeridos";
-                return;
+            // Verificar si los datos requeridos están presentes
+            if (empty($datos['correo'])) {
+                $errores[] = "El correo es obligatorio.";
             }
 
-            $cliente = $this->clienteService->obtenerClientePorCorreo($datos['correo']);
+            if (empty($datos['password'])) {
+                $errores[] = "La contraseña es obligatoria.";
+            }
 
-            var_dump(password_verify($datos['password'], $cliente->getPassword()));
+            // Intentar obtener al cliente
+            $cliente = $this->clienteService->obtenerClientePorCorreo($datos['correo']);
 
             if ($cliente && password_verify($datos['password'], $cliente->getPassword())) {
                 // Iniciar sesión
-                $_SESSION['cliente_id'] = $cliente->getId();
-                echo "Inicio de sesión exitoso";
-                // Redirigir a la página de perfil u otra página de tu elección
+                session_start();
+                $_SESSION['tipo'] = "cliente";
+                $_SESSION['nombre'] = $cliente->getNombre();
+                $_SESSION['id'] = $cliente->getId();
+
+                // Redirigir a la página principal
+                $this->pages->render('Layout/principal');
             } else {
-                echo "Correo o contraseña incorrectos";
+                $errores[] = "Correo o contraseña incorrectos.";
+                $this->pages->render('Cliente/iniciarSesion', ['errores' => $errores]);
             }
         } else {
             $this->pages->render('Cliente/iniciarSesion');
         }
+    }
+
+
+    public function cerrarSesion()
+    {
+        session_start();
+        session_unset();
+        session_destroy();
+
+        $this->pages->render('Layout/principal');
     }
 }

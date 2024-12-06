@@ -44,6 +44,7 @@ INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALU
 ('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
 
 -- Tabla de servicios
+DROP TABLE IF EXISTS servicios;
 CREATE TABLE IF NOT EXISTS servicios (
     id              INT AUTO_INCREMENT NOT NULL,
     nombre          VARCHAR(100) NOT NULL,
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS servicios (
 );
 
 -- Tabla de citas
+DROP TABLE IF EXISTS citas;
 CREATE TABLE IF NOT EXISTS citas (
     id              INT AUTO_INCREMENT NOT NULL,
     id_cliente      INT NOT NULL,
@@ -71,6 +73,7 @@ CREATE TABLE IF NOT EXISTS citas (
 );
 
 -- Tabla de historial de servicios
+DROP TABLE IF EXISTS historial_servicios;
 CREATE TABLE IF NOT EXISTS historial_servicios (
     id              INT AUTO_INCREMENT NOT NULL,
     id_cliente      INT NOT NULL,
@@ -98,7 +101,7 @@ INSERT INTO especialidades (nombre) VALUES
 -- Insertar para los servicios
 INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES 
 ('Corte de Caballero', 15.00, 30, 7),  -- Barbero
-('Ajuste de Barba', 8.00, 20, 7),      -- Barbero
+('Corte de Barba', 8.00, 20, 7),      -- Barbero
 ('Corte de Dama', 25.00, 45, 1),       -- Estilista
 ('Peinado Básico', 12.00, 30, 1),      -- Estilista
 ('Peinado de Fiesta', 30.00, 60, 1),   -- Estilista

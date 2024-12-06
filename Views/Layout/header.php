@@ -6,5 +6,10 @@
     <title>Salón de belleza</title>
 </head>
 <body>
+    <?php
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    ?>
     <h1>Salón de belleza</h1>
     
