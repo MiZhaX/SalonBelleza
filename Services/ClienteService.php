@@ -16,7 +16,7 @@ class ClienteService
     }
 
     // Obtener todos los clientes
-    public function obtenerTodosClientes(): array
+    public function obtenerTodos(): array
     {
         return $this->clienteRepository->obtenerTodos();
     }
@@ -25,6 +25,11 @@ class ClienteService
     public function obtenerClientePorCorreo(string $correo): ?Cliente
     {
         return $this->clienteRepository->obtenerPorCorreo($correo);
+    }
+
+    public function obtenerPorId(string $id): ?Cliente
+    {
+        return $this->clienteRepository->obtenerPorId($id);
     }
 
 

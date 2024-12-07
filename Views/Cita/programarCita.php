@@ -1,4 +1,6 @@
 <h2>Programar Cita</h2>
+<script src="<?= BASE_URL ?>js/Cita/programarCita.js"></script>
+
 <?php if (isset($errores) && !empty($errores)): ?>
     <div class="errores">
         <ul>
@@ -22,12 +24,19 @@
         <?php endforeach; ?>
     </select>
 
+    <?php if ($_SESSION['tipo'] === 'empleado'): ?>
+        <label for="id_cliente">Cliente</label>
+        <select id="id_cliente" name="id_cliente" required>
+            <option value="">Selecciona un cliente</option>
+            <?php foreach ($clientes as $cliente): ?>
+                <option value="<?= $cliente->getId() ?>"><?= htmlspecialchars($cliente->getNombre()) ?></option>
+            <?php endforeach; ?>
+        </select>
+    <?php endif; ?>
+
     <label for="id_empleado">Empleado</label>
-    <select id="id_empleado" name="id_empleado" required>
-        <option value="">Selecciona un empleado</option>
-        <?php foreach ($empleados as $empleado): ?>
-            <option value="<?= $empleado->getId() ?>"><?= htmlspecialchars($empleado->getNombre()) ?></option>
-        <?php endforeach; ?>
+    <select id="id_empleado" name="id_empleado" required <?php if ($_SESSION['tipo'] === 'empleado') echo 'disabled'; ?>>
+        <option value="">Selecciona un servicio primero</option>
     </select>
 
     <label for="fecha">Fecha</label>
@@ -38,3 +47,5 @@
 
     <button type="submit">Programar Cita</button>
 </form>
+
+

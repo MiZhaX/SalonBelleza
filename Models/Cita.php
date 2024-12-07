@@ -9,10 +9,10 @@ class Cita
     private int $idServicio;
     private string $fecha;
     private string $hora;
-    private int $duracionMinutos;
     private string $estado;
+    private string $detalles;
 
-    public function __construct(?int $id = 0, int $idCliente = 0, int $idEmpleado = 0, int $idServicio = 0, string $fecha = '', string $hora = '', int $duracionMinutos = 0, string $estado = '')
+    public function __construct(?int $id = 0, int $idCliente = 0, int $idEmpleado = 0, int $idServicio = 0, string $fecha = '', string $hora = '', string $estado = '', string $detalles = '')
     {
         $this->id = $id;
         $this->idCliente = $idCliente;
@@ -20,8 +20,8 @@ class Cita
         $this->idServicio = $idServicio;
         $this->fecha = $fecha;
         $this->hora = $hora;
-        $this->duracionMinutos = $duracionMinutos;
         $this->estado = $estado;
+        $this->detalles = $detalles;
     }
 
     // Getters
@@ -55,14 +55,14 @@ class Cita
         return $this->hora;
     }
 
-    public function getDuracionMinutos(): int
-    {
-        return $this->duracionMinutos;
-    }
-
     public function getEstado(): string
     {
         return $this->estado;
+    }
+
+    public function getDetalles(): ?string
+    {
+        return $this->detalles;
     }
 
     // Setters
@@ -96,45 +96,31 @@ class Cita
         $this->hora = $hora;
     }
 
-    public function setDuracionMinutos(int $duracionMinutos): void
-    {
-        $this->duracionMinutos = $duracionMinutos;
-    }
-
     public function setEstado(string $estado): void
     {
         $this->estado = $estado;
     }
 
+    public function setDetalles(?string $detalles): void
+    {
+        $this->detalles = $detalles;
+    }
 
-    public function validarDatos($empleadoService, $servicioService, $citaService): array
+    public function validarDatos(): array
     {
         $errores = [];
 
-        // 1. Verificar que la fecha y hora no sean anteriores a la actual
+        // 1. Validar la fecha y hora 
         $fechaHoraActual = new \DateTime();
         $fechaHoraCita = \DateTime::createFromFormat('Y-m-d H:i', $this->fecha . ' ' . $this->hora);
         if ($fechaHoraCita < $fechaHoraActual) {
             $errores[] = "La fecha y hora de la cita no pueden ser anteriores al día de hoy.";
         }
 
-        // 2. Verificar que la cita esté dentro del horario de atención (por ejemplo, de 9 AM a 7 PM)
+        // 2. Validar que la hora de la cita esté en el horario permitido 
         $horaCita = (int)substr($this->hora, 0, 2);
         if ($horaCita < 9 || $horaCita > 19) {
             $errores[] = "La hora de la cita debe estar entre las 9:00 AM y las 7:00 PM.";
-        }
-
-        // 3. Verificar que el empleado esté disponible para esa fecha y hora
-        if ($citaService->verificarDisponibilidadEmpleado($this->idEmpleado, $this->fecha, $this->hora, $this->duracionMinutos) != 0) {
-            $errores[] = "El empleado ya está ocupado en ese horario.";
-        }
-
-        // 4. Verificar que el servicio y el empleado sean compatibles (según la especialidad)
-        $empleado = $empleadoService->obtenerPorId($this->idEmpleado);
-        $servicio = $servicioService->obtenerPorId($this->idServicio);
-
-        if ($empleado->getIdEspecialidad() !== $servicio->getIdEspecialidad()) {
-            $errores[] = "El empleado seleccionado no puede realizar este servicio.";
         }
 
         return $errores;

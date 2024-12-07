@@ -108,4 +108,14 @@ class EmpleadoRepository
         // Ejecutar la consulta
         return $stmt->execute();
     }
+
+    public function obtenerPorEspecialidad(int $idEspecialidad): array {
+        $query = "SELECT id, nombre FROM empleados WHERE id_especialidad = :id_especialidad";
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id_especialidad', $idEspecialidad, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    }   
+    
 }

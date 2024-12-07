@@ -18,7 +18,8 @@
             <li><a href="<?= BASE_URL ?>Empleado/registrarEmpleado">Registrar nuevo empleado</a></li>
             <li><a href="<?= BASE_URL ?>Empleados/verEmpleados">Ver empleados</a></li>
         <?php elseif ($_SESSION['tipo'] === 'empleado'): ?>
-            <li><a href="<?= BASE_URL ?>Empleado/misOpciones">Mis opciones</a></li>
+            <li><a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Ver mis citas</a></li>
+            <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
         <?php elseif ($_SESSION['tipo'] === 'cliente'): ?>
             <li><a href="<?= BASE_URL ?>Cita/verCitasCliente">Ver mis citas</a></li>
             <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>

@@ -6,6 +6,9 @@
     <title>Salón de belleza</title>
 </head>
 <body>
+    <script>
+        const BASE_URL = 'http://localhost/SalonBelleza/';
+    </script>
     <?php
     if (session_status() === PHP_SESSION_NONE) {
         session_start();

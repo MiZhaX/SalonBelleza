@@ -33,4 +33,8 @@ class EmpleadoService
     {
         return $this->empleadoRepository->insertar($empleado);
     }
+
+    public function obtenerEmpleadosPorEspecialidad(int $idEspecialidad): array {
+        return $this->empleadoRepository->obtenerPorEspecialidad($idEspecialidad);
+    }    
 }

@@ -65,6 +65,29 @@ class ClienteRepository
         return null;
     }
 
+    public function obtenerPorId(string $id): ?Cliente
+    {
+        $sql = "SELECT * FROM clientes WHERE id = :id";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            $cliente = new Cliente();
+            $cliente->setId($resultado['id']);
+            $cliente->setNombre($resultado['nombre']);
+            $cliente->setCorreo($resultado['correo']);
+            $cliente->setTelefono($resultado['telefono']);
+            $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
+            $cliente->setPassword($resultado['password']);
+            return $cliente;
+        }
+
+        return null;
+    }
+
 
     // Insertar un cliente
     public function insertar(Cliente $cliente): bool

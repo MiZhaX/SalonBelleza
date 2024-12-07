@@ -17,7 +17,7 @@ class CitaRepository
 
     public function obtenerCitasPorCliente(int $idCliente): array
     {
-        $query = $this->conexion->prepare("SELECT * FROM citas WHERE id_cliente = :id_cliente ORDER BY fecha, hora");
+        $query = $this->conexion->prepare("SELECT * FROM citas WHERE id_cliente = :id_cliente ORDER BY fecha_cita, hora_cita");
         $query->bindParam(':id_cliente', $idCliente, PDO::PARAM_INT);
         $query->execute();
         $resultados = $query->fetchAll(PDO::FETCH_ASSOC);
@@ -29,9 +29,8 @@ class CitaRepository
                 $fila['id_cliente'],
                 $fila['id_empleado'],
                 $fila['id_servicio'],
-                $fila['fecha'],
-                $fila['hora'],
-                $fila['duracion_minutos'],
+                $fila['fecha_cita'],
+                $fila['hora_cita'],
                 $fila['estado']
             );
         }
@@ -53,9 +52,8 @@ class CitaRepository
                 $row['id_cliente'],
                 $row['id_empleado'],
                 $row['id_servicio'],
-                $row['fecha'],
-                $row['hora'],
-                $row['duracion_minutos'],
+                $row['fecha_cita'],
+                $row['hora_cita'],
                 $row['estado']
             );
         }
@@ -63,18 +61,46 @@ class CitaRepository
         return $citas;
     }
 
+    public function obtenerPorId(string $id): ?Cita
+    {
+        $sql = "SELECT * FROM citas WHERE id = :id";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            $cita = new Cita();
+            $cita->setId($resultado['id']);
+            $cita->setIdCliente($resultado['id_cliente']);
+            $cita->setIdEmpleado($resultado['id_empleado']);
+            $cita->setIdServicio($resultado['id_servicio']);
+            $cita->setFecha($resultado['fecha_cita']);
+            $cita->setHora($resultado['hora_cita']);
+            $cita->setEstado($resultado['estado']);
+            return $cita;
+        }
+
+        return null;
+    }
+
+    public function obtenerUltimoIdInsertado(): int
+    {
+        return $this->conexion->lastInsertId();
+    }
+
     public function crearCita(Cita $cita): bool
     {
         $query = $this->conexion->prepare("
-            INSERT INTO citas (id_cliente, id_empleado, id_servicio, fecha, hora, duracion_minutos, estado) 
-            VALUES (:id_cliente, :id_empleado, :id_servicio, :fecha, :hora, :duracion_minutos, :estado)
+            INSERT INTO citas (id_cliente, id_empleado, id_servicio, fecha_cita, hora_cita, estado) 
+            VALUES (:id_cliente, :id_empleado, :id_servicio, :fecha, :hora, :estado)
         ");
         $query->bindValue(':id_cliente', $cita->getIdCliente(), PDO::PARAM_INT);
         $query->bindValue(':id_empleado', $cita->getIdEmpleado(), PDO::PARAM_INT);
         $query->bindValue(':id_servicio', $cita->getIdServicio(), PDO::PARAM_INT);
         $query->bindValue(':fecha', $cita->getFecha(), PDO::PARAM_STR);
         $query->bindValue(':hora', $cita->getHora(), PDO::PARAM_STR);
-        $query->bindValue(':duracion_minutos', $cita->getDuracionMinutos(), PDO::PARAM_INT);
         $query->bindValue(':estado', $cita->getEstado(), PDO::PARAM_STR);
 
         return $query->execute();
@@ -93,52 +119,106 @@ class CitaRepository
         return $stmt->execute();
     }
 
-    public function verificarDisponibilidadEmpleado(int $idEmpleado, string $fecha, string $hora, int $duracionMinutos)
-{
-    // Calcular la hora final para la nueva cita
-    $horaFinal = date('H:i:s', strtotime("$hora +$duracionMinutos minutes"));
+    public function verificarDisponibilidadEmpleado(int $idEmpleado, string $fecha, string $hora, int $idServicio): bool
+    {
+        $query = "
+                SELECT COUNT(*) 
+                FROM citas c
+                INNER JOIN servicios s ON c.id_servicio = s.id
+                WHERE c.id_empleado = :id_empleado
+                AND c.fecha_cita = :fecha
+                AND c.estado != 'cancelada'
+                AND (
+                    -- Caso 1: La nueva cita comienza dentro de una cita existente
+                    (:hora BETWEEN c.hora_cita AND DATE_ADD(c.hora_cita, INTERVAL s.duracion_minutos MINUTE))
+                    OR
+                    -- Caso 2: La nueva cita termina dentro de una cita existente
+                    (DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE)
+                    BETWEEN c.hora_cita AND DATE_ADD(c.hora_cita, INTERVAL s.duracion_minutos MINUTE))
+                    OR
+                    -- Caso 3: La nueva cita engloba completamente una cita existente
+                    (c.hora_cita BETWEEN :hora AND DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE))
+                )";
 
-    // Imprimir valores para depuración
-    var_dump("idEmpleado: ", $idEmpleado);
-    var_dump("fecha: ", $fecha);
-    var_dump("hora: ", $hora);
-    var_dump("duracionMinutos: ", $duracionMinutos);
-    var_dump("horaFinal: ", $horaFinal); // Hora final calculada
+        // Preparar la consulta
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id_empleado', $idEmpleado, PDO::PARAM_INT);
+        $stmt->bindParam(':fecha', $fecha, PDO::PARAM_STR);
+        $stmt->bindParam(':hora', $hora, PDO::PARAM_STR);
+        $stmt->bindParam(':id_servicio', $idServicio, PDO::PARAM_INT);
 
-    // Consulta para verificar la disponibilidad del empleado
-    $query = "
-        SELECT COUNT(*) 
-        FROM citas c
-        INNER JOIN servicios s ON c.id_servicio = s.id
-        WHERE c.id_empleado = :id_empleado
-        AND c.fecha_cita = :fecha
-        AND (
-            -- Verificar si la nueva cita se superpone con una cita existente
-            (c.hora_cita < :hora_final AND DATE_ADD(c.hora_cita, INTERVAL s.duracion_minutos MINUTE) > :hora)
-            OR
-            (c.hora_cita < :hora AND DATE_ADD(:hora, INTERVAL :duracion_minutos MINUTE) > c.hora_cita)
-        )
-    ";
+        // Ejecutar la consulta
+        $stmt->execute();
 
-    // Preparar la consulta
-    $stmt = $this->conexion->prepare($query);
-    $stmt->bindParam(':id_empleado', $idEmpleado, PDO::PARAM_INT);
-    $stmt->bindParam(':fecha', $fecha, PDO::PARAM_STR);
-    $stmt->bindParam(':hora', $hora, PDO::PARAM_STR);
-    $stmt->bindParam(':hora_final', $horaFinal, PDO::PARAM_STR); // Hora final de la cita
-    $stmt->bindParam(':duracion_minutos', $duracionMinutos, PDO::PARAM_INT); // Duración del servicio
+        // Obtener el resultado
+        $result = $stmt->fetchColumn();
 
-    // Ejecutar la consulta
-    $stmt->execute();
+        // Si el resultado es 0, no hay conflictos en el horario
+        return $result == 0;
+    }
 
-    // Obtener el resultado
-    $result = $stmt->fetchColumn(); 
+    public function verificarDisponibilidadCliente(int $idCliente, string $fecha, string $hora, int $idServicio): bool
+    {
+        $query = "
+                SELECT COUNT(*) 
+                FROM citas c
+                INNER JOIN servicios s ON c.id_servicio = s.id
+                WHERE c.id_cliente = :id_cliente
+                AND c.fecha_cita = :fecha
+                AND c.estado != 'cancelada'
+                AND (
+                    -- Caso 1: La nueva cita comienza dentro de una cita existente
+                    (:hora BETWEEN c.hora_cita AND DATE_ADD(c.hora_cita, INTERVAL s.duracion_minutos MINUTE))
+                    OR
+                    -- Caso 2: La nueva cita termina dentro de una cita existente
+                    (DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE)
+                    BETWEEN c.hora_cita AND DATE_ADD(c.hora_cita, INTERVAL s.duracion_minutos MINUTE))
+                    OR
+                    -- Caso 3: La nueva cita engloba completamente una cita existente
+                    (c.hora_cita BETWEEN :hora AND DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE))
+                )";
 
-    // Imprimir el resultado de la consulta para depuración
-    var_dump("Result from DB: ", $result);
+        // Preparar la consulta
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id_cliente', $idCliente, PDO::PARAM_INT);
+        $stmt->bindParam(':fecha', $fecha, PDO::PARAM_STR);
+        $stmt->bindParam(':hora', $hora, PDO::PARAM_STR);
+        $stmt->bindParam(':id_servicio', $idServicio, PDO::PARAM_INT);
 
-    // Si el resultado es 0, no hay citas en ese horario
-    return $result == 0; 
-}
+        // Ejecutar la consulta
+        $stmt->execute();
 
+        // Obtener el resultado
+        $result = $stmt->fetchColumn();
+
+        // Si el resultado es 0, no hay conflictos en el horario
+        return $result == 0;
+    }
+
+    public function finalizarCita(int $idCita, string $detalles): bool
+    {
+        // Obtener la cita
+        $cita = $this->obtenerPorId($idCita);
+
+        if ($cita) {
+            // Actualizar el estado a "completada" y los detalles
+            $query = "UPDATE citas SET estado = 'completada', detalles = :detalles WHERE id = :id";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindValue(':detalles', $detalles, PDO::PARAM_STR);
+            $stmt->bindValue(':id', $idCita, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        }
+
+        return false;
+    }
+
+    public function eliminarCita(int $idCita): bool
+    {
+        $query = "DELETE FROM citas WHERE id = :id";
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id', $idCita, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
 }
