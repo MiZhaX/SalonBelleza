@@ -6,17 +6,20 @@ use Services\EmpleadoService;
 use Models\Empleado;
 use Lib\Pages;
 use Services\EspecialidadService;
+use Services\ServicioService;
 
 class EmpleadoController
 {
     private EmpleadoService $empleadoService;
     private EspecialidadService $especialidadService;
+    private ServicioService $servicioService;
     private Pages $pages;
 
     public function __construct()
     {
         $this->empleadoService = new EmpleadoService();
         $this->especialidadService = new EspecialidadService();
+        $this->servicioService = new ServicioService();
         $this->pages = new Pages();
     }
 
@@ -133,4 +136,29 @@ class EmpleadoController
             'especialidades' => $especialidades
         ]);
     }
+
+    public function obtenerEmpleadosPorEspecialidad(): void {
+        if (isset($_GET['id_servicio'])) {
+            $idServicio = intval($_GET['id_servicio']);
+    
+            // Obtener la especialidad del servicio
+            $servicio = $this->servicioService->obtenerPorId($idServicio);
+    
+            if ($servicio) {
+                $idEspecialidad = $servicio->getIdEspecialidad();
+    
+                // Obtener empleados con esa especialidad
+                $empleados = $this->empleadoService->obtenerEmpleadosPorEspecialidad($idEspecialidad);
+    
+                header('Content-Type: application/json');
+                echo json_encode($empleados);
+            } else {
+                http_response_code(404);
+                echo json_encode(['error' => 'Servicio no encontrado.']);
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'No se proporcionó el ID del servicio.']);
+        }
+    }    
 }

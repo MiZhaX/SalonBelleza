@@ -4,8 +4,12 @@
     <div class="exito"><?= htmlspecialchars($mensajeExito) ?></div>
 <?php endif; ?>
 
-<?php if (empty($citas)): ?>
-    <p>No tienes citas programadas.</p>
+<?php if (isset($mensajeError)): ?>
+    <div class="error"><?= htmlspecialchars($mensajeError) ?></div>
+<?php endif; ?>
+
+<?php if (count($citas) == 0): ?>
+    <p>No tienes citas asignadas</p>
 <?php else: ?>
     <table>
         <thead>
@@ -13,7 +17,11 @@
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>Servicio</th>
-                <th>Empleado</th>
+                <?php if ($_SESSION['tipo'] === 'empleado'): ?>
+                    <th>Cliente</th>
+                <?php else: ?>
+                    <th>Empleado</th>
+                <?php endif; ?>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -23,13 +31,25 @@
                 <tr>
                     <td><?= htmlspecialchars($cita->getFecha()) ?></td>
                     <td><?= htmlspecialchars($cita->getHora()) ?></td>
-                    <td><?= htmlspecialchars($cita->getServicio()->getNombre()) ?></td>
-                    <td><?= htmlspecialchars($cita->getEmpleado()->getNombre()) ?></td>
+                    <td><?= htmlspecialchars($cita->getIdServicio()) ?></td>
+
+                    <?php if ($_SESSION['tipo'] === 'empleado'): ?>
+                        <td><?= htmlspecialchars($cita->getIdCliente()) ?></td>
+                    <?php else: ?>
+                        <td><?= htmlspecialchars($cita->getIdEmpleado()) ?></td>
+                    <?php endif; ?>
+
                     <td><?= htmlspecialchars($cita->getEstado()) ?></td>
                     <td>
-                        <!-- Se podría agregar un botón para cancelar o modificar la cita -->
-                        <?php if ($cita->getEstado() !== 'cancelada'): ?>
-                            <a href="<?= BASE_URL ?>Cita/cancelarCita/<?= $cita->getId() ?>">Cancelar</a>
+                        <a href="<?= BASE_URL ?>Cita/verResumenCita&id=<?= $cita->getId() ?>">Resumen</a>
+                        <?php if ($cita->getEstado() == 'pendiente'): ?>
+                            <?php if ($_SESSION['tipo'] === 'empleado'): ?>
+                                <a href="<?= BASE_URL ?>Cita/finalizarCita&id=<?= $cita->getId() ?>">Finalizar</a>
+                            <?php endif; ?>
+                            <a href="<?= BASE_URL ?>Cita/actualizarEstado&id=<?= $cita->getId() ?>&estado=cancelada">Cancelar</a>
+                        <?php endif; ?>
+                        <?php if ($cita->getEstado() == 'cancelada' && $_SESSION['tipo'] === 'empleado'): ?>
+                            <a href="<?= BASE_URL ?>Cita/borrarCita&id=<?= $cita->getId() ?>">Borrar</a>
                         <?php endif; ?>
                     </td>
                 </tr>

@@ -4,22 +4,16 @@ namespace Controllers;
 
 use Lib\Pages;
 use Services\CitaService;
-use Services\ServicioService;
-use Services\EmpleadoService;
 use Models\Cita;
 
 class CitaController
 {
     private CitaService $citaService;
-    private ServicioService $servicioService;
-    private EmpleadoService $empleadoService;
     private Pages $pages;
 
-    public function __construct() 
+    public function __construct()
     {
         $this->citaService = new CitaService();
-        $this->servicioService = new ServicioService();
-        $this->empleadoService = new EmpleadoService();
         $this->pages = new Pages();
         session_start();
     }
@@ -30,43 +24,54 @@ class CitaController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = $_POST;
 
+            if ($_SESSION['tipo'] == 'empleado') {
+                $idCliente = $datos['id_cliente'];
+            } else {
+                $idCliente = $_SESSION['id'];
+            }
+
             // Crear una nueva instancia de Cita
             $cita = new Cita(
-                idCliente: $_SESSION['id'],
+                idCliente: $idCliente,
                 idEmpleado: $datos['id_empleado'],
                 idServicio: $datos['id_servicio'],
                 fecha: $datos['fecha'],
                 hora: $datos['hora'],
-                duracionMinutos: $this->servicioService->obtenerPorId($datos['id_servicio'])->getDuracionMinutos()
             );
 
-            // Validar los datos de la cita
-            $errores = $cita->validarDatos($this->empleadoService, $this->servicioService, $this->citaService);
+            // Validar los datos de la cita usando el CitaService
+            $errores = $this->citaService->validarDatosCita($cita);
 
             if (!empty($errores)) {
+                // Delegar la obtención de servicios y empleados al CitaService
+                $datosServiciosYEmpleados = $this->citaService->obtenerServiciosYEmpleadosYClientes();
+
                 // Recargar la página con los errores
-                $servicios = $this->servicioService->obtenerTodos();
-                $empleados = $this->empleadoService->obtenerTodos();
                 $this->pages->render('Cita/programarCita', [
                     'errores' => $errores,
-                    'servicios' => $servicios,
-                    'empleados' => $empleados,
+                    'servicios' => $datosServiciosYEmpleados['servicios'],
+                    'empleados' => $datosServiciosYEmpleados['empleados'],
+                    'clientes' => $datosServiciosYEmpleados['clientes']
                 ]);
                 return;
             }
 
             // Programar la cita
             $resultado = $this->citaService->programarCita([
-                'id_cliente' => $_SESSION['id'],
+                'id_cliente' => $idCliente,
                 'id_empleado' => $datos['id_empleado'],
                 'id_servicio' => $datos['id_servicio'],
                 'fecha' => $datos['fecha'],
                 'hora' => $datos['hora'],
-                'duracion_minutos' => $this->servicioService->obtenerPorId($datos['id_servicio'])->getDuracionMinutos(),
             ]);
 
             if ($resultado) {
-                $this->pages->render('Cita/programarCita', [
+                // Obtener el resumen de la cita
+                $resumenCita = $this->citaService->obtenerResumenCita($resultado);
+
+                // Redirigir a la vista con el resumen
+                $this->pages->render('Cita/resumenCita', [
+                    'resumen' => $resumenCita,
                     'mensajeExito' => 'La cita se ha programado correctamente.',
                 ]);
             } else {
@@ -75,12 +80,27 @@ class CitaController
                 ]);
             }
         } else {
+            // Delegar la obtención de servicios y empleados al CitaService
+            $datosServiciosYEmpleados = $this->citaService->obtenerServiciosYEmpleadosYClientes();
+
             // Mostrar formulario para programar cita
-            $servicios = $this->servicioService->obtenerTodos();
-            $empleados = $this->empleadoService->obtenerTodos();
             $this->pages->render('Cita/programarCita', [
-                'servicios' => $servicios,
-                'empleados' => $empleados,
+                'servicios' => $datosServiciosYEmpleados['servicios'],
+                'empleados' => $datosServiciosYEmpleados['empleados'],
+                'clientes' => $datosServiciosYEmpleados['clientes']
+            ]);
+        }
+    }
+
+    public function verResumenCita()
+    {
+        if (isset($_GET['id'])) {
+            $idCita = $_GET['id'];
+            $resumenCita = $this->citaService->obtenerResumenCita($idCita);
+
+            // Redirigir a la vista con el resumen
+            $this->pages->render('Cita/resumenCita', [
+                'resumen' => $resumenCita,
             ]);
         }
     }
@@ -90,38 +110,150 @@ class CitaController
     {
         $citas = $this->citaService->obtenerCitasPorCliente($_SESSION['id']);
         $this->pages->render('Cita/misCitas', [
-            'citas' => $citas,
+            'citas' => $citas
         ]);
     }
 
     // Mostrar citas de un empleado (como administrador o empleado)
-    public function verCitasEmpleado(int $idEmpleado): void
+    public function verCitasEmpleado(): void
     {
-        if (!isset($_SESSION['id']) || ($_SESSION['tipo'] !== 'administrador' && $_SESSION['tipo'] !== 'empleado')) {
-            header('Location: ' . BASE_URL . 'Empleado/iniciarSesion');
-            exit;
-        }
-
-        $citas = $this->citaService->obtenerCitasPorEmpleado($idEmpleado);
-        $this->pages->render('Cita/verCitasEmpleado', [
-            'citas' => $citas,
+        $citas = $this->citaService->obtenerCitasPorEmpleado($_SESSION['id']);
+        $this->pages->render('Cita/misCitas', [
+            'citas' => $citas
         ]);
     }
 
     // Cambiar estado de una cita
-    public function actualizarEstado(int $idCita, string $estado): void
+    public function actualizarEstado(): void
     {
-        if (!isset($_SESSION['id']) || ($_SESSION['tipo'] !== 'administrador' && $_SESSION['tipo'] !== 'empleado')) {
-            header('Location: ' . BASE_URL . 'Empleado/iniciarSesion');
-            exit;
+        $mensajeError = '';
+        $mensajeExito = '';
+
+        // Verificamos que los parámetros 'id' y 'estado' estén en la URL
+        if (isset($_GET['id']) && isset($_GET['estado'])) {
+            $idCita = $_GET['id'];
+            $estado = $_GET['estado'];
+
+            // Llamamos al servicio para actualizar el estado de la cita
+            $resultado = $this->citaService->actualizarEstadoCita($idCita, $estado);
+
+            // Guardamos el mensaje de éxito o error en la sesión
+            if ($resultado) {
+                $mensajeExito = "El estado de la cita con ID $idCita ha sido actualizado a '$estado'.";
+            } else {
+                $mensajeError = "Error al actualizar el estado de la cita.";
+            }
+        } else {
+            $mensajeError = "Faltan parámetros necesarios para actualizar el estado de la cita.";
         }
 
-        $resultado = $this->citaService->actualizarEstadoCita($idCita, $estado);
-
-        if ($resultado) {
-            echo "Estado de la cita actualizado correctamente.";
+        if ($_SESSION['tipo'] == 'empleado') {
+            $citas = $this->citaService->obtenerCitasPorEmpleado($_SESSION['id']);
         } else {
-            echo "Error al actualizar el estado de la cita.";
+            $citas = $this->citaService->obtenerCitasPorCliente($_SESSION['id']);
+        }
+
+        $this->pages->render('Cita/misCitas', [
+            'citas' => $citas,
+            'mensajeError' => $mensajeError,
+            'mensajeExito' => $mensajeExito
+        ]);
+    }
+
+    public function borrarCita(): void
+    {
+        $mensajeError = '';
+        $mensajeExito = '';
+
+        // Verificar que el parámetro 'id' esté presente en la URL
+        if (isset($_GET['id'])) {
+            $idCita = intval($_GET['id']); // Convertir a entero para mayor seguridad
+
+            // Intentar borrar la cita
+            $resultado = $this->citaService->borrarCita($idCita);
+
+            // Mostrar mensaje según el resultado y redirigir a la vista de citas
+            if ($resultado) {
+                $mensajeExito = "La cita con ID $idCita ha sido eliminada con éxito.";
+            } else {
+                $mensajeError = "Error al intentar borrar la cita con ID $idCita.";
+            }
+        } else {
+            $mensajeError = "No se especificó una cita para borrar.";
+        }
+        $this->pages->render('Cita/misCitas', [
+            'mensajeExito' => $mensajeExito,
+            'mensajeError' => $mensajeError,
+            'citas' => $this->citaService->obtenerCitasPorCliente($_SESSION['id'])
+        ]);
+    }
+
+    public function finalizarCita(): void
+    {
+        $idCita = $_GET['id'];
+        if ($idCita) {
+            // Obtener los detalles de la cita
+            $cita = $this->citaService->obtenerPorId($idCita);
+
+            // Verificar que la cita esté en estado "pendiente"
+            if ($cita && $cita->getEstado() === 'pendiente') {
+                // Mostrar el formulario para finalizar la cita
+                $this->pages->render('Cita/finalizarCita', [
+                    'cita' => $cita,
+                ]);
+            } else {
+                $this->pages->render('Cita/misCitas', [
+                    'mensajeError' => 'La cita no está disponible para finalizar.',
+                ]);
+            }
+        }
+    }
+
+    public function guardarDetallesCita(): void
+    {
+        $idCita = $_POST['id_cita'];
+        $detalles = $_POST['detalles'];
+        $mensajeError = '';
+        $mensajeExito = '';
+
+        if ($idCita && $detalles) {
+            // Obtener la cita por ID
+            $cita = $this->citaService->obtenerPorId($idCita);
+
+            // Verificar que la cita esté pendiente
+            if ($cita && $cita->getEstado() === 'pendiente') {
+                // Actualizar el estado y los detalles de la cita
+                $resultado = $this->citaService->finalizarCita($idCita, $detalles);
+
+                if ($resultado) {
+                    // Mostrar un mensaje de éxito y redirigir al listado de citas
+                    $mensajeExito = 'La cita ha sido finalizada correctamente.';
+                } else {
+                    // Si ocurre un error al actualizar la cita
+                    $mensajeError = 'Ocurrió un error al finalizar la cita. Intenta nuevamente.';
+                }
+            } else {
+                // Si la cita no existe o ya no está pendiente
+                $mensajeError = 'La cita no está disponible para finalizar.';
+            }
+
+            if ($_SESSION['tipo'] == 'empleado') {
+                $citas = $this->citaService->obtenerCitasPorEmpleado($_SESSION['id']);
+            } else {
+                $citas = $this->citaService->obtenerCitasPorCliente($_SESSION['id']);
+            }
+    
+            $this->pages->render('Cita/misCitas', [
+                'citas' => $citas,
+                'mensajeError' => $mensajeError,
+                'mensajeExito' => $mensajeExito
+            ]);
+
+        } else {
+            // Si no se proporcionaron los datos necesarios
+            $this->pages->render('Cita/misCitas', [
+                'mensajeError' => 'No se han recibido los datos para finalizar la cita.',
+            ]);
         }
     }
 }
