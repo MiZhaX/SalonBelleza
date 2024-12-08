@@ -109,13 +109,22 @@ class EmpleadoRepository
         return $stmt->execute();
     }
 
-    public function obtenerPorEspecialidad(int $idEspecialidad): array {
+    public function obtenerPorEspecialidad(int $idEspecialidad): array
+    {
         $query = "SELECT id, nombre FROM empleados WHERE id_especialidad = :id_especialidad";
         $stmt = $this->conexion->prepare($query);
         $stmt->bindParam(':id_especialidad', $idEspecialidad, PDO::PARAM_INT);
         $stmt->execute();
-    
-        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
-    }   
-    
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function eliminar(int $idEmpleado): bool
+    {
+        $query = "DELETE FROM empleados WHERE id = :id";
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id', $idEmpleado, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
 }

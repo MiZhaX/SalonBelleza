@@ -23,7 +23,6 @@ class EmpleadoController
         $this->pages = new Pages();
     }
 
-    // Log in de un empleado
     public function iniciarSesion(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -67,7 +66,6 @@ class EmpleadoController
         }
     }
 
-
     public function cerrarSesion()
     {
         session_start();
@@ -97,7 +95,7 @@ class EmpleadoController
                 nombre: $datosSanitizados['nombre'],
                 correo: $datosSanitizados['correo'],
                 telefono: $datosSanitizados['telefono'],
-                password: $datosSanitizados['password'], 
+                password: $datosSanitizados['password'],
                 idEspecialidad: $datosSanitizados['especialidad']
             );
 
@@ -137,19 +135,20 @@ class EmpleadoController
         ]);
     }
 
-    public function obtenerEmpleadosPorEspecialidad(): void {
+    public function obtenerEmpleadosPorEspecialidad(): void
+    {
         if (isset($_GET['id_servicio'])) {
             $idServicio = intval($_GET['id_servicio']);
-    
+
             // Obtener la especialidad del servicio
             $servicio = $this->servicioService->obtenerPorId($idServicio);
-    
+
             if ($servicio) {
                 $idEspecialidad = $servicio->getIdEspecialidad();
-    
+
                 // Obtener empleados con esa especialidad
                 $empleados = $this->empleadoService->obtenerEmpleadosPorEspecialidad($idEspecialidad);
-    
+
                 header('Content-Type: application/json');
                 echo json_encode($empleados);
             } else {
@@ -160,5 +159,43 @@ class EmpleadoController
             http_response_code(400);
             echo json_encode(['error' => 'No se proporcionó el ID del servicio.']);
         }
-    }    
+    }
+
+    public function mostrarTodos(): void
+    {
+        $empleados = $this->empleadoService->obtenerTodos();
+
+        $this->pages->render('Empleado/mostrarEmpleados', ['empleados' => $empleados, 'especialidadService' => $this->especialidadService]);
+    }
+
+    public function despedirEmpleado(): void
+    {
+        $mensajeExito = '';
+        $mensajeError = '';
+
+        // Verificar que el ID del empleado esté presente en la URL
+        if (isset($_GET['id'])) {
+            $idEmpleado = $_GET['id'];
+
+            // Despedir al empleado usando el servicio
+            $resultado = $this->empleadoService->despedirEmpleado($idEmpleado);
+
+            if ($resultado) {
+                $mensajeExito = "El empleado con ID $idEmpleado ha sido despedido exitosamente.";
+            } else {
+                $mensajeError = "Ocurrió un error al intentar despedir al empleado con ID $idEmpleado.";
+            }
+        } else {
+            $mensajeError = "No se especificó un empleado para despedir.";
+        }
+
+        // Obtener la lista actualizada de empleados y redirigir a la vista
+        $empleados = $this->empleadoService->obtenerTodos();
+        $this->pages->render('Empleado/mostrarEmpleados', [
+            'empleados' => $empleados,
+            'mensajeExito' => $mensajeExito,
+            'mensajeError' => $mensajeError,
+            'especialidadService' => $this->especialidadService
+        ]);
+    }
 }

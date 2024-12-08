@@ -16,15 +16,19 @@
     <ul>
         <?php if ($_SESSION['tipo'] === 'administrador'): ?>
             <li><a href="<?= BASE_URL ?>Empleado/registrarEmpleado">Registrar nuevo empleado</a></li>
-            <li><a href="<?= BASE_URL ?>Empleados/verEmpleados">Ver empleados</a></li>
+            <li><a href="<?= BASE_URL ?>Cliente/crearCliente">Registrar nuevo cliente</a></li>
+            <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
+            <li><a href="<?= BASE_URL ?>Empleado/mostrarTodos">Ver empleados</a></li>
+            <li><a href="<?= BASE_URL ?>Cita/mostrarTodos">Ver todas las citas</a></li>
         <?php elseif ($_SESSION['tipo'] === 'empleado'): ?>
             <li><a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Ver mis citas</a></li>
             <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
+            <li><a href="<?= BASE_URL ?>Cliente/crearCliente">Registrar nuevo cliente</a></li>
         <?php elseif ($_SESSION['tipo'] === 'cliente'): ?>
             <li><a href="<?= BASE_URL ?>Cita/verCitasCliente">Ver mis citas</a></li>
             <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
         <?php endif; ?>
-        <br>
-        <a href="<?= BASE_URL . ($_SESSION['tipo'] === 'cliente' ? 'Cliente/cerrarSesion' : 'Empleado/cerrarSesion') ?>">Cerrar sesión</a>
+        <li><a href="<?= BASE_URL ?>Servicio/mostrarTodos">Ver servicios</a></li>
     </ul>
+    <a href="<?= BASE_URL . ($_SESSION['tipo'] === 'cliente' ? 'Cliente/cerrarSesion' : 'Empleado/cerrarSesion') ?>">Cerrar sesión</a>
 <?php endif; ?>

@@ -2,6 +2,7 @@
 
 namespace Services;
 
+use Models\Especialidad;
 use Repositories\EspecialidadRepository;
 
 class EspecialidadService
@@ -17,5 +18,10 @@ class EspecialidadService
     public function obtenerTodas(): array
     {
         return $this->especialidadRepository->obtenerTodas();
+    }
+
+    public function obtenerPorId(int $id): ?Especialidad
+    {
+        return $this->especialidadRepository->obtenerPorId($id);
     }
 }

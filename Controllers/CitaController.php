@@ -256,4 +256,11 @@ class CitaController
             ]);
         }
     }
+
+    public function mostrarTodos(): void
+    {
+        $citas = $this->citaService->obtenerTodos();
+
+        $this->pages->render('Cita/mostrarCitas', ['citas' => $citas]);
+    }
 }

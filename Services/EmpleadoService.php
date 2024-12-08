@@ -34,7 +34,21 @@ class EmpleadoService
         return $this->empleadoRepository->insertar($empleado);
     }
 
-    public function obtenerEmpleadosPorEspecialidad(int $idEspecialidad): array {
+    public function obtenerEmpleadosPorEspecialidad(int $idEspecialidad): array
+    {
         return $this->empleadoRepository->obtenerPorEspecialidad($idEspecialidad);
-    }    
+    }
+
+    public function despedirEmpleado(int $idEmpleado): bool
+    {
+        // Verificar si el empleado existe antes de intentar despedirlo
+        $empleado = $this->empleadoRepository->obtenerPorId($idEmpleado);
+
+        if (!$empleado) {
+            return false; // No se encontró el empleado
+        }
+
+        // Realizar el despido (podría ser una eliminación o un cambio de estado)
+        return $this->empleadoRepository->eliminar($idEmpleado);
+    }
 }

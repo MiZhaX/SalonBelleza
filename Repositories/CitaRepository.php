@@ -15,6 +15,32 @@ class CitaRepository
         $this->conexion = new BaseDatos();
     }
 
+    public function obtenerTodos(): array
+    {
+        $sql = "SELECT * FROM citas";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute();
+
+        $citasData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $citas = [];
+
+        foreach ($citasData as $citaData) {
+            $cita = new Cita(
+                id: $citaData['id'],
+                idCliente: $citaData['id_cliente'],
+                idEmpleado: $citaData['id_empleado'],
+                idServicio: $citaData['id_servicio'],
+                fecha: $citaData['fecha_cita'],
+                hora: $citaData['hora_cita'],
+                estado: $citaData['estado'],
+                detalles: $citaData['detalles']
+            );
+            $citas[] = $cita;
+        }
+
+        return $citas;
+    }
+
     public function obtenerCitasPorCliente(int $idCliente): array
     {
         $query = $this->conexion->prepare("SELECT * FROM citas WHERE id_cliente = :id_cliente ORDER BY fecha_cita, hora_cita");
@@ -31,7 +57,8 @@ class CitaRepository
                 $fila['id_servicio'],
                 $fila['fecha_cita'],
                 $fila['hora_cita'],
-                $fila['estado']
+                $fila['estado'],
+                $fila['detalles']
             );
         }
 
@@ -54,7 +81,8 @@ class CitaRepository
                 $row['id_servicio'],
                 $row['fecha_cita'],
                 $row['hora_cita'],
-                $row['estado']
+                $row['estado'],
+                $row['detalles']
             );
         }
 
@@ -79,6 +107,7 @@ class CitaRepository
             $cita->setFecha($resultado['fecha_cita']);
             $cita->setHora($resultado['hora_cita']);
             $cita->setEstado($resultado['estado']);
+            $cita->setDetalles($resultado['detalles']);
             return $cita;
         }
 

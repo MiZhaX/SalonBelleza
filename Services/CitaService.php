@@ -45,6 +45,11 @@ class CitaService
         return $idCita;
     }
 
+    public function obtenerTodos(): array
+    {
+        return $this->citaRepository->obtenerTodos();
+    }
+
     public function obtenerCitasPorCliente(int $idCliente): array
     {
         return $this->citaRepository->obtenerCitasPorCliente($idCliente);
@@ -136,6 +141,7 @@ class CitaService
             'fecha' => $cita->getFecha(),
             'hora' => $cita->getHora(),
             'precioTotal' => $servicio->getPrecio(),
+            'detalles' => $cita->getDetalles()
         ];
 
         return $resumen;

@@ -1,1 +1,0 @@
-<h2>Bienvenido empleado</h2>

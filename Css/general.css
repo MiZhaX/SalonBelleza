@@ -1,0 +1,55 @@
+/* General */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Estilos generales para los enlaces */
+a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s, text-decoration 0.3s;
+    font-size: large;
+}
+
+/* Estilo al pasar el ratón por encima */
+a:hover {
+    color: #0056b3;
+    transform: scale(1.2);
+}
+
+/* Estilo para enlaces visitados */
+a:visited {
+    color: #6c757d;
+}
+
+/* Enlaces dentro de listas */
+li{
+    transition: transform 0.3s ease, color 0.3s ease;
+    font-size: large;
+}
+
+li:hover{
+    transform: scale(1.2);
+}
+
+li a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+td a:hover{
+    color: #007bff;
+}
+
+
