@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     telefono        VARCHAR(15) NOT NULL,
     fecha_nacimiento DATE DEFAULT NULL,
     password        VARCHAR(255) NOT NULL,
+    token_confirmacion TEXT,
     CONSTRAINT pk_clientes PRIMARY KEY (id),
     UNIQUE KEY correo_UNIQUE (correo)
 );
@@ -105,6 +106,6 @@ INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES
 ('Maquillaje de Novia', 80.00, 120, 9),-- Maquillaje
 ('Asesoría de Imagen', 60.00, 90, 10); -- Asesoría de Imagen
 
--- Crear el empleado administrador
+-- Crear el empleado administrador 
 INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
 ('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
