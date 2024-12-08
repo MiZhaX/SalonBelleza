@@ -26,9 +26,9 @@ class ServicioRepository
             $servicios[] = new Servicio(
                 $fila['id'],
                 $fila['nombre'],
-                (float)$fila['precio'],
-                (int)$fila['duracion_minutos'],
-                (int)$fila['id_especialidad']
+                $fila['precio'],
+                $fila['duracion_minutos'],
+                $fila['id_especialidad']
             );
         }
 

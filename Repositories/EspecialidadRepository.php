@@ -23,4 +23,21 @@ class EspecialidadRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerPorId(int $id): ?Especialidad
+    {
+        $query = $this->conexion->prepare("SELECT * FROM especialidades WHERE id = :id");
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+        $fila = $query->fetch(PDO::FETCH_ASSOC);
+
+        if ($fila) {
+            return new Especialidad(
+                $fila['id'],
+                $fila['nombre'],
+            );
+        }
+
+        return null;
+    }
 }

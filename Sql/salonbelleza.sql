@@ -59,10 +59,9 @@ CREATE TABLE IF NOT EXISTS citas (
     id              INT AUTO_INCREMENT NOT NULL,
     id_cliente      INT NOT NULL,
     id_empleado     INT NOT NULL,
-    id_servicio     INT NOT NULL, -- Relación con el servicio solicitado
+    id_servicio     INT NOT NULL, 
     fecha_cita      DATE NOT NULL,
     hora_cita       TIME NOT NULL,
-    precio_total    DECIMAL(10, 2) NOT NULL,
     estado           ENUM('pendiente', 'completada', 'cancelada') DEFAULT 'pendiente',
     detalles        TEXT NOT NULL,
     CONSTRAINT pk_citas PRIMARY KEY (id),

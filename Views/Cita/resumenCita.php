@@ -37,10 +37,18 @@
         <td><strong>Precio Total:</strong></td>
         <td>$<?= htmlspecialchars($resumen['precioTotal']) ?></td>
     </tr>
+    <?php if($resumen['detalles']): ?>
+    <tr>
+        <td><strong>Detalles:</strong></td>
+        <td><?= htmlspecialchars($resumen['detalles']) ?></td>
+    </tr>
+    <?php endif; ?>
 </table>
 
 <?php if ($_SESSION['tipo'] === 'empleado'): ?>
     <a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Volver a mis citas</a>
+<?php elseif ($_SESSION['tipo'] === 'administrador'): ?>
+    <a href="<?= BASE_URL ?>Cita/mostrarTodos">Ver todas las citas</a>
 <?php else: ?>
     <a href="<?= BASE_URL ?>Cita/verCitasCliente">Volver a mis citas</a>
 <?php endif; ?>
