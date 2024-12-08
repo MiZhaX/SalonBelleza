@@ -33,7 +33,8 @@ class ClienteRepository
                 correo: $clienteData['correo'],
                 telefono: $clienteData['telefono'],
                 fechaNacimiento: $clienteData['fecha_nacimiento'],
-                password: $clienteData['password']
+                password: $clienteData['password'],
+                tokenConfirmacion: $clienteData['token_confirmacion']
             );
             $clientes[] = $cliente;
         }
@@ -59,6 +60,30 @@ class ClienteRepository
             $cliente->setTelefono($resultado['telefono']);
             $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
             $cliente->setPassword($resultado['password']);
+            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
+            return $cliente;
+        }
+
+        return null;
+    }
+
+    public function obtenerClientePorToken(string $token): ?Cliente {
+        $sql = "SELECT * FROM clientes WHERE token_confirmacion = :token";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            $cliente = new Cliente();
+            $cliente->setId($resultado['id']);
+            $cliente->setNombre($resultado['nombre']);
+            $cliente->setCorreo($resultado['correo']);
+            $cliente->setTelefono($resultado['telefono']);
+            $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
+            $cliente->setPassword($resultado['password']);
+            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
             return $cliente;
         }
 
@@ -82,6 +107,7 @@ class ClienteRepository
             $cliente->setTelefono($resultado['telefono']);
             $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
             $cliente->setPassword($resultado['password']);
+            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
             return $cliente;
         }
 
@@ -98,10 +124,11 @@ class ClienteRepository
         $telefono = $cliente->getTelefono();
         $fechaNacimiento = $cliente->getFechaNacimiento();
         $password = $cliente->getPassword();
+        $token = $cliente->getTokenConfirmacion();
 
         // Preparar la consulta SQL
-        $sql = "INSERT INTO clientes (nombre, correo, telefono, fecha_nacimiento, password) 
-            VALUES (:nombre, :correo, :telefono, :fecha_nacimiento, :password)";
+        $sql = "INSERT INTO clientes (nombre, correo, telefono, fecha_nacimiento, password, token_confirmacion) 
+            VALUES (:nombre, :correo, :telefono, :fecha_nacimiento, :password, :token)";
 
         // Preparamos la sentencia
         $stmt = $this->conexion->prepare($sql);
@@ -112,6 +139,7 @@ class ClienteRepository
         $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
         $stmt->bindParam(':fecha_nacimiento', $fechaNacimiento, PDO::PARAM_STR);
         $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
 
         // Ejecutamos la consulta
         return $stmt->execute();
@@ -122,7 +150,7 @@ class ClienteRepository
     public function actualizar(Cliente $cliente): bool
     {
         $sql = "UPDATE clientes SET nombre = :nombre, correo = :correo, telefono = :telefono, 
-                    fecha_nacimiento = :fecha_nacimiento, password = :password
+                    fecha_nacimiento = :fecha_nacimiento, password = :password, token_confirmacion = :token
                     WHERE id = :id";
         $stmt = $this->conexion->prepare($sql);
 
@@ -132,6 +160,7 @@ class ClienteRepository
         $stmt->bindParam(':telefono', $cliente->getTelefono(), PDO::PARAM_STR);
         $stmt->bindParam(':fecha_nacimiento', $cliente->getFechaNacimiento(), PDO::PARAM_STR);
         $stmt->bindParam(':password', $cliente->getPassword(), PDO::PARAM_STR);
+        $stmt->bindParam(':token', $cliente->getTokenConfirmacion(), PDO::PARAM_STR);
 
         return $stmt->execute();
     }
@@ -144,5 +173,12 @@ class ClienteRepository
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
-    }
+    }  
+    
+    public function activarCuenta(Cliente $cliente): bool {
+        $query = "UPDATE clientes SET token_confirmacion = NULL WHERE id = :id";
+        $stmt = $this->conexion->prepare($query);
+        $stmt->bindValue(':id', $cliente->getId());
+        return $stmt->execute();
+    }    
 }

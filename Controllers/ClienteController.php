@@ -6,6 +6,9 @@ use Lib\Pages;
 use Services\ClienteService;
 use Models\Cliente;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+
 class ClienteController
 {
     private ClienteService $clienteService;
@@ -58,7 +61,15 @@ class ClienteController
 
                 // Si el cliente se crea correctamente, mostrar mensaje de éxito
                 if ($resultado) {
-                    $mensajeExito = "Cliente creado correctamente";
+                    $mensajeExito = "Cliente creado correctamente. Revisa tu correo para confirmar la cuenta.";
+                
+                    // Enviar correo de confirmación
+                    $urlConfirmacion = BASE_URL . "Cliente/confirmarCuenta?token=" . urlencode($this->clienteService->obtenerClientePorCorreo($datosSanitizados['correo'])->getTokenConfirmacion());
+                    $asunto = "Confirma tu cuenta";
+                    $mensaje = "<p>Gracias por registrarte. Haz clic en el siguiente enlace para confirmar tu cuenta:</p>";
+                    $mensaje .= "<a href='$urlConfirmacion'>$urlConfirmacion</a>";
+                
+                    $this->enviarCorreo($datosSanitizados['correo'], $asunto, $mensaje);
                 } else {
                     $errores[] = "Hubo un problema al crear el cliente. Inténtalo de nuevo.";
                 }
@@ -94,17 +105,22 @@ class ClienteController
             // Intentar obtener al cliente
             $cliente = $this->clienteService->obtenerClientePorCorreo($datos['correo']);
 
-            if ($cliente && password_verify($datos['password'], $cliente->getPassword())) {
-                // Iniciar sesión
-                session_start();
-                $_SESSION['tipo'] = "cliente";
-                $_SESSION['nombre'] = $cliente->getNombre();
-                $_SESSION['id'] = $cliente->getId();
+            if($cliente->getTokenConfirmacion() == null){
+                if ($cliente && password_verify($datos['password'], $cliente->getPassword())) {
+                    // Iniciar sesión
+                    session_start();
+                    $_SESSION['tipo'] = "cliente";
+                    $_SESSION['nombre'] = $cliente->getNombre();
+                    $_SESSION['id'] = $cliente->getId();
 
-                // Redirigir a la página principal
-                $this->pages->render('Layout/principal');
+                    // Redirigir a la página principal
+                    $this->pages->render('Layout/principal');
+                } else {
+                    $errores[] = "Correo o contraseña incorrectos.";
+                    $this->pages->render('Cliente/iniciarSesion', ['errores' => $errores]);
+                }
             } else {
-                $errores[] = "Correo o contraseña incorrectos.";
+                $errores[] = "Cuenta no confirmada";
                 $this->pages->render('Cliente/iniciarSesion', ['errores' => $errores]);
             }
         } else {
@@ -121,4 +137,44 @@ class ClienteController
 
         $this->pages->render('Layout/principal');
     }
+
+    private function enviarCorreo(string $correo, string $asunto, string $mensaje): void {
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;
+        $mail->Host = 'smtp.gmail.com';
+        $mail->Port = 465;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->SMTPAuth = true;
+        $mail->Username = 'mbonelortiz@gmail.com'; // Cambia por tu correo
+        $mail->Password = 'vwkdgauvdbsrlfid'; // Cambia por tu contraseña
+        $mail->setFrom('mbonelortiz@gmail.com', 'SalónDeBelleza');
+        $mail->addAddress($correo);
+        $mail->Subject = $asunto;
+        $mail->msgHTML($mensaje);
+    
+        if (!$mail->send()) {
+            error_log('Error al enviar correo: ' . $mail->ErrorInfo);
+        }
+    }
+
+    public function confirmarCuenta(): void {
+        if (isset($_GET['token'])) {
+            $token = $_GET['token'];
+            $cliente = $this->clienteService->obtenerClientePorToken($token);
+    
+            if ($cliente) {
+                $cliente->setTokenConfirmacion(null); // Elimina el token
+                $resultado = $this->clienteService->activarCuenta($cliente);
+    
+                if ($resultado) {
+                    $this->pages->render('Cliente/confirmarCuenta', ['mensajeExito' => 'Cuenta confirmada exitosamente.']);
+                } else {
+                    $this->pages->render('Cliente/confirmarCuenta', ['mensajeError' => 'Error al confirmar la cuenta.']);
+                }
+            } else {
+                $this->pages->render('Cliente/confirmarCuenta', ['mensajeError' => 'Token inválido o cuenta ya confirmada.']);
+            }
+        }
+    }    
 }

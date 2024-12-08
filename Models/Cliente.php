@@ -10,6 +10,7 @@ class Cliente
     private string $telefono;
     private string $fechaNacimiento;
     private string $password;
+    private ?string $tokenConfirmacion;
 
     // Constructor
     public function __construct(
@@ -18,7 +19,8 @@ class Cliente
         string $correo = "",
         string $telefono = "",
         string $fechaNacimiento = "",
-        string $password = ""
+        string $password = "",
+        ?string $tokenConfirmacion = ""
     ) {
         $this->id = $id;
         $this->nombre = $nombre;
@@ -26,6 +28,7 @@ class Cliente
         $this->telefono = $telefono;
         $this->fechaNacimiento = $fechaNacimiento;
         $this->password = $password;
+        $this->tokenConfirmacion = $tokenConfirmacion;
     }
 
     // Getters y setters
@@ -87,6 +90,14 @@ class Cliente
     public function setPassword(string $password): void
     {
         $this->password = $password;
+    }
+
+    public function getTokenConfirmacion(): ?string {
+        return $this->tokenConfirmacion;
+    }
+
+    public function setTokenConfirmacion(?string $tokenConfirmacion): void {
+        $this->tokenConfirmacion = $tokenConfirmacion;
     }
 
     public function validarDatos(array $datos): array {
