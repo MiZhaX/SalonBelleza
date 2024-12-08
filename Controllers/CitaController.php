@@ -6,6 +6,9 @@ use Lib\Pages;
 use Services\CitaService;
 use Models\Cita;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+
 class CitaController
 {
     private CitaService $citaService;
@@ -68,11 +71,29 @@ class CitaController
             if ($resultado) {
                 // Obtener el resumen de la cita
                 $resumenCita = $this->citaService->obtenerResumenCita($resultado);
+                $urlResumen = BASE_URL . "Cita/verResumenCita?id=" . $resultado;
+
+                $asunto = "Resumen de tu cita en SalonBelleza";
+                $mensaje = "<p>Gracias por realizar una cita con nosotros. Aquí tienes el resumen de tu cita:</p>";
+                $mensaje .= "<ul>";
+                $mensaje .= "<li><strong>Cliente:</strong> {$resumenCita['cliente']}</li>";
+                $mensaje .= "<li><strong>Servicio:</strong> {$resumenCita['servicio']}</li>";
+                $mensaje .= "<li><strong>Empleado:</strong> {$resumenCita['empleado']}</li>";
+                $mensaje .= "<li><strong>Fecha:</strong> {$resumenCita['fecha']}</li>";
+                $mensaje .= "<li><strong>Hora:</strong> {$resumenCita['hora']}</li>";
+                $mensaje .= "</ul>";
+                $mensaje .= "Ver resumen online:";
+                $mensaje .= "<a href='$urlResumen'>Resumen Online</a>";
+                $mensaje .= "<p>Te esperamos en nuestro salon de belleza. ¡Gracias por confiar en nosotros!</p>";
+
+                // Enviar el correo
+                $correoCliente = $this->citaService->obtenerCorreoClientePorId($idCliente);
+                $this->enviarCorreo($correoCliente, $asunto, $mensaje);
 
                 // Redirigir a la vista con el resumen
                 $this->pages->render('Cita/resumenCita', [
                     'resumen' => $resumenCita,
-                    'mensajeExito' => 'La cita se ha programado correctamente.',
+                    'mensajeExito' => 'La cita se ha programado correctamente. Se ha enviado un correo con el resumen de la cita',
                 ]);
             } else {
                 $this->pages->render('Cita/programarCita', [
@@ -262,5 +283,25 @@ class CitaController
         $citas = $this->citaService->obtenerTodos();
 
         $this->pages->render('Cita/mostrarCitas', ['citas' => $citas]);
+    }
+
+    private function enviarCorreo(string $correo, string $asunto, string $mensaje): void {
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;
+        $mail->Host = 'smtp.gmail.com';
+        $mail->Port = 465;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->SMTPAuth = true;
+        $mail->Username = 'mbonelortiz@gmail.com'; 
+        $mail->Password = 'vwkdgauvdbsrlfid'; 
+        $mail->setFrom('mbonelortiz@gmail.com', 'SalonDeBelleza');
+        $mail->addAddress($correo);
+        $mail->Subject = $asunto;
+        $mail->msgHTML($mensaje);
+    
+        if (!$mail->send()) {
+            error_log('Error al enviar correo: ' . $mail->ErrorInfo);
+        }
     }
 }
