@@ -15,6 +15,7 @@ class CitaRepository
         $this->conexion = new BaseDatos();
     }
 
+    // Obtener todas las citas
     public function obtenerTodos(): array
     {
         $sql = "SELECT * FROM citas";
@@ -24,6 +25,7 @@ class CitaRepository
         $citasData = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $citas = [];
 
+        // Crear una nueva cita y almacenarla por cada fila
         foreach ($citasData as $citaData) {
             $cita = new Cita(
                 id: $citaData['id'],
@@ -41,14 +43,17 @@ class CitaRepository
         return $citas;
     }
 
+    // Obtener todas las citas de un cliente
     public function obtenerCitasPorCliente(int $idCliente): array
     {
-        $query = $this->conexion->prepare("SELECT * FROM citas WHERE id_cliente = :id_cliente ORDER BY fecha_cita, hora_cita");
-        $query->bindParam(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $query->execute();
-        $resultados = $query->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->conexion->prepare("SELECT * FROM citas WHERE id_cliente = :id_cliente ORDER BY fecha_cita, hora_cita");
+        $stmt->bindParam(':id_cliente', $idCliente, PDO::PARAM_INT);
+        $stmt->execute();
+        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $citas = [];
+
+        // Crear y almacenar una cita por cada fila
         foreach ($resultados as $fila) {
             $citas[] = new Cita(
                 $fila['id'],
@@ -65,30 +70,34 @@ class CitaRepository
         return $citas;
     }
 
+    // Obtener todas las citas de un empleado
     public function obtenerCitasPorEmpleado(int $idEmpleado): array
     {
-        $sql = "SELECT * FROM citas WHERE id_empleado = :id_empleado";
-        $stmt = $this->conexion->prepare($sql);
+        $stmt = $this->conexion->prepare("SELECT * FROM citas WHERE id_empleado = :id_empleado ORDER BY fecha_cita, hora_cita");
         $stmt->bindParam(':id_empleado', $idEmpleado, PDO::PARAM_INT);
         $stmt->execute();
+        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $citas = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+        // Crear y almacenar una cita por cada fila
+        foreach ($resultados as $fila) {
             $citas[] = new Cita(
-                $row['id'],
-                $row['id_cliente'],
-                $row['id_empleado'],
-                $row['id_servicio'],
-                $row['fecha_cita'],
-                $row['hora_cita'],
-                $row['estado'],
-                $row['detalles']
+                $fila['id'],
+                $fila['id_cliente'],
+                $fila['id_empleado'],
+                $fila['id_servicio'],
+                $fila['fecha_cita'],
+                $fila['hora_cita'],
+                $fila['estado'],
+                $fila['detalles']
             );
         }
 
         return $citas;
     }
 
+    // Obtener la cita por su Id
     public function obtenerPorId(string $id): ?Cita
     {
         $sql = "SELECT * FROM citas WHERE id = :id";
@@ -98,6 +107,7 @@ class CitaRepository
 
         $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Crear y alamcenar la cita con los datos obtenidos
         if ($resultado) {
             $cita = new Cita();
             $cita->setId($resultado['id']);
@@ -114,17 +124,21 @@ class CitaRepository
         return null;
     }
 
+    // Obtener el último Id de Cita insertado
     public function obtenerUltimoIdInsertado(): int
     {
         return $this->conexion->lastInsertId();
     }
 
+    // Crear una cita
     public function crearCita(Cita $cita): bool
     {
         $query = $this->conexion->prepare("
             INSERT INTO citas (id_cliente, id_empleado, id_servicio, fecha_cita, hora_cita, estado) 
             VALUES (:id_cliente, :id_empleado, :id_servicio, :fecha, :hora, :estado)
         ");
+
+        // Enlazar los datos del Cliente con los parámetros
         $query->bindValue(':id_cliente', $cita->getIdCliente(), PDO::PARAM_INT);
         $query->bindValue(':id_empleado', $cita->getIdEmpleado(), PDO::PARAM_INT);
         $query->bindValue(':id_servicio', $cita->getIdServicio(), PDO::PARAM_INT);
@@ -135,21 +149,23 @@ class CitaRepository
         return $query->execute();
     }
 
+    // Actualizar el estado de una cita
     public function actualizarEstadoCita(int $idCita, string $nuevoEstado): bool
     {
         $sql = "UPDATE citas SET estado = :estado WHERE id = :id";
         $stmt = $this->conexion->prepare($sql);
 
-        // Vincular parámetros
+        // Vincular parámetros con lel nuevo estado
         $stmt->bindParam(':estado', $nuevoEstado, PDO::PARAM_STR);
         $stmt->bindParam(':id', $idCita, PDO::PARAM_INT);
 
-        // Ejecutar la consulta y devolver si la actualización fue exitosa
         return $stmt->execute();
     }
 
+    // Verificar si el empleado tiene alguna cita establecida en la fecha y hora dadas como parámetros
     public function verificarDisponibilidadEmpleado(int $idEmpleado, string $fecha, string $hora, int $idServicio): bool
     {
+        // Consulta SQL 
         $query = "
                 SELECT COUNT(*) 
                 FROM citas c
@@ -169,25 +185,25 @@ class CitaRepository
                     (c.hora_cita BETWEEN :hora AND DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE))
                 )";
 
-        // Preparar la consulta
         $stmt = $this->conexion->prepare($query);
+
+        // Vincular parámetros con los datos
         $stmt->bindParam(':id_empleado', $idEmpleado, PDO::PARAM_INT);
         $stmt->bindParam(':fecha', $fecha, PDO::PARAM_STR);
         $stmt->bindParam(':hora', $hora, PDO::PARAM_STR);
         $stmt->bindParam(':id_servicio', $idServicio, PDO::PARAM_INT);
 
-        // Ejecutar la consulta
         $stmt->execute();
-
-        // Obtener el resultado
         $result = $stmt->fetchColumn();
 
-        // Si el resultado es 0, no hay conflictos en el horario
+        // Si el resultado es 0, no hay ninguna cita que intervenga en el horario
         return $result == 0;
     }
 
+    // Verificar si el cliente tiene alguna cita establecida en la fecha y hora dadas como parámetros
     public function verificarDisponibilidadCliente(int $idCliente, string $fecha, string $hora, int $idServicio): bool
     {
+        // Consulta SQL
         $query = "
                 SELECT COUNT(*) 
                 FROM citas c
@@ -207,26 +223,25 @@ class CitaRepository
                     (c.hora_cita BETWEEN :hora AND DATE_ADD(:hora, INTERVAL (SELECT duracion_minutos FROM servicios WHERE id = :id_servicio) MINUTE))
                 )";
 
-        // Preparar la consulta
         $stmt = $this->conexion->prepare($query);
+
+        // Vincular parámetros con los datos
         $stmt->bindParam(':id_cliente', $idCliente, PDO::PARAM_INT);
         $stmt->bindParam(':fecha', $fecha, PDO::PARAM_STR);
         $stmt->bindParam(':hora', $hora, PDO::PARAM_STR);
         $stmt->bindParam(':id_servicio', $idServicio, PDO::PARAM_INT);
 
-        // Ejecutar la consulta
         $stmt->execute();
-
-        // Obtener el resultado
         $result = $stmt->fetchColumn();
 
-        // Si el resultado es 0, no hay conflictos en el horario
+        // Si el resultado es 0, no hay ninguna cita que intervenga en el horario
         return $result == 0;
     }
 
+    // Completar una cita
     public function finalizarCita(int $idCita, string $detalles): bool
     {
-        // Obtener la cita
+        // Obtener la cita por el Id
         $cita = $this->obtenerPorId($idCita);
 
         if ($cita) {
@@ -242,6 +257,7 @@ class CitaRepository
         return false;
     }
 
+    // Eliminar una cita
     public function eliminarCita(int $idCita): bool
     {
         $query = "DELETE FROM citas WHERE id = :id";

@@ -15,6 +15,7 @@ class EspecialidadRepository
         $this->conexion = new BaseDatos();
     }
 
+    // Obtener todas las especialidades
     public function obtenerTodas(): array
     {
         $sql = "SELECT * FROM especialidades";
@@ -24,6 +25,7 @@ class EspecialidadRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Obtener una especialidad por su Id
     public function obtenerPorId(int $id): ?Especialidad
     {
         $query = $this->conexion->prepare("SELECT * FROM especialidades WHERE id = :id");

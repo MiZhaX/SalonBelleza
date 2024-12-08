@@ -108,4 +108,4 @@ INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES
 
 -- Crear el empleado administrador 
 INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
-('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11);
+('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11); -- Contraseña: adminpass

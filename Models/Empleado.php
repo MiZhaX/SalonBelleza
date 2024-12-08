@@ -99,15 +99,15 @@ class Empleado
             $errores[] = "El nombre es obligatorio.";
         }
 
-        if (!filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
+        if (empty($this->correo) || !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
             $errores[] = "El correo electrónico no es válido.";
         }
 
-        if (empty($this->telefono) || !preg_match('/^\+?\d{9}$/', $this->telefono)) {
+        if (empty($this->telefono) || !preg_match('/^[0-9]{9}$/', $this->telefono)) {
             $errores[] = "El teléfono no es válido.";
         }
 
-        if (strlen($this->password) < 8) {
+        if (empty($this->password) || !preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+={}\[\]:;"\'<>,.?\/\\|`~])[A-Za-z\d!@#$%^&*()_\-+={}\[\]:;"\'<>,.?\/\\|`~]{8,}$/', $this->password)){
             $errores[] = "La contraseña debe tener al menos 8 caracteres.";
         }
         

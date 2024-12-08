@@ -2,12 +2,10 @@
 <script src="<?= BASE_URL ?>js/Cita/programarCita.js"></script>
 
 <?php if (isset($errores) && !empty($errores)): ?>
-    <div class="errores">
-        <ul>
-            <?php foreach ($errores as $error): ?>
-                <li><?= htmlspecialchars($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
+    <div class="error">
+        <?php foreach ($errores as $error): ?>
+            <p><?= htmlspecialchars($error) ?></p>
+        <?php endforeach; ?>
     </div>
 <?php endif; ?>
 

@@ -44,7 +44,7 @@
     </tr>
     <?php endif; ?>
 </table>
-
+<br>
 <?php if (isset($_SESSION['tipo'])): ?>
     <?php if ($_SESSION['tipo'] === 'empleado'): ?>
         <a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Volver a mis citas</a>

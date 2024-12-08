@@ -1,11 +1,11 @@
 <h2>Iniciar sesión como cliente</h2>
 <!-- Mostrar errores si los hay -->
 <?php if (isset($errores) && !empty($errores)): ?>
-    <ul style="color: red;">
+    <div class="error">
         <?php foreach ($errores as $error): ?>
             <li><?= htmlspecialchars($error) ?></li>
         <?php endforeach; ?>
-    </ul>
+    </div>
 <?php endif; ?>
 
 <form method="POST" action="<?= BASE_URL ?>Cliente/iniciarSesion">

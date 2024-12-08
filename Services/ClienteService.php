@@ -22,20 +22,25 @@ class ClienteService
     }
 
     // Obtener cliente por su correo
-    public function obtenerClientePorCorreo(string $correo): ?Cliente
+    public function obtenerPorCorreo(string $correo): ?Cliente
     {
-        return $this->clienteRepository->obtenerPorCorreo($correo);
+        return $this->clienteRepository->obtenerPorColumna('correo', $correo);
     }
 
     public function obtenerPorId(string $id): ?Cliente
     {
-        return $this->clienteRepository->obtenerPorId($id);
+        return $this->clienteRepository->obtenerPorColumna('id', $id);
+    }
+
+    public function obtenerPorToken(string $token): ?Cliente
+    {
+        return $this->clienteRepository->obtenerPorColumna('token_confirmacion', $token);
     }
 
     // Crear un cliente
     public function crearCliente(array $datos): bool
     {
-        $token = bin2hex(random_bytes(16)); 
+        $token = bin2hex(random_bytes(16));
         $datos['token_confirmacion'] = $token;
 
         $cliente = new Cliente(
@@ -49,7 +54,6 @@ class ClienteService
 
         return $this->clienteRepository->insertar($cliente);
     }
-
 
     // Actualizar un cliente
     public function actualizarCliente(array $datos): bool
@@ -76,12 +80,8 @@ class ClienteService
         return $this->clienteRepository->eliminar($id);
     }
 
-    public function obtenerClientePorToken(string $token): ?Cliente
-    {
-        return $this->clienteRepository->obtenerClientePorToken($token);
-    }
-
-    public function activarCuenta(Cliente $cliente):bool 
+    // Activar la cuenta 
+    public function activarCuenta(Cliente $cliente): bool
     {
         return $this->clienteRepository->activarCuenta($cliente);
     }

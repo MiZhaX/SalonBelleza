@@ -2,6 +2,8 @@
 
 namespace Models;
 
+use DateTime;
+
 class Cliente
 {
     private int $id;
@@ -92,15 +94,19 @@ class Cliente
         $this->password = $password;
     }
 
-    public function getTokenConfirmacion(): ?string {
+    public function getTokenConfirmacion(): ?string
+    {
         return $this->tokenConfirmacion;
     }
 
-    public function setTokenConfirmacion(?string $tokenConfirmacion): void {
+    public function setTokenConfirmacion(?string $tokenConfirmacion): void
+    {
         $this->tokenConfirmacion = $tokenConfirmacion;
     }
 
-    public function validarDatos(array $datos): array {
+    // Validar datos
+    public function validarDatos(array $datos): array
+    {
         $errores = [];
 
         // Validación del nombre
@@ -121,11 +127,25 @@ class Cliente
         // Validación de la fecha de nacimiento
         if (empty($datos['fecha_nacimiento'])) {
             $errores['fecha_nacimiento'] = 'La fecha de nacimiento es obligatoria.';
+        } else {
+            $fechaNacimiento = DateTime::createFromFormat('Y-m-d', $datos['fecha_nacimiento']);
+            $fechaHoy = new DateTime();
+
+            if (!$fechaNacimiento) {
+                $errores['fecha_nacimiento'] = 'La fecha de nacimiento no tiene un formato válido.';
+            } elseif ($fechaNacimiento >= $fechaHoy) {
+                $errores['fecha_nacimiento'] = 'La fecha de nacimiento debe ser anterior a hoy.';
+            }
         }
 
         // Validación de la contraseña
         if (empty($datos['password'])) {
             $errores['password'] = 'La contraseña es obligatoria.';
+        } else {
+            // Validar que la contraseña tenga al menos 8 caracteres, una mayúscula y un símbolo
+            if (!preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+={}\[\]:;"\'<>,.?\/\\|`~])[A-Za-z\d!@#$%^&*()_\-+={}\[\]:;"\'<>,.?\/\\|`~]{8,}$/', $datos['password'])) {
+                $errores['password'] = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un símbolo.';
+            }
         }
 
         return $errores;
