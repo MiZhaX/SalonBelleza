@@ -1,18 +1,16 @@
 <h2>Registrarse</h2>
 
 <?php if (isset($mensajeExito)): ?>
-    <div class="success-message">
+    <div class="exito">
         <?= htmlspecialchars($mensajeExito); ?>
     </div>
 <?php endif; ?>
 
 <?php if (isset($errores) && !empty($errores)): ?>
-    <div class="error-messages">
-        <ul>
+    <div class="error">
             <?php foreach ($errores as $error): ?>
-                <li><?= htmlspecialchars($error); ?></li>
+                <p><?= htmlspecialchars($error); ?></p>
             <?php endforeach; ?>
-        </ul>
     </div>
 <?php endif; ?>
 

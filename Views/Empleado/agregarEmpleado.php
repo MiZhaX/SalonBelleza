@@ -1,14 +1,16 @@
 <h2>Registrar nuevo empleado</h2>
 <?php if (!empty($errores)): ?>
-    <ul>
+    <div class="error">
         <?php foreach ($errores as $error): ?>
             <li><?= htmlspecialchars($error) ?></li>
         <?php endforeach; ?>
-    </ul>
+    </div>
 <?php endif; ?>
 
 <?php if (!empty($mensajeExito)): ?>
-    <p><?= htmlspecialchars($mensajeExito) ?></p>
+    <div class="exito">
+        <p><?= htmlspecialchars($mensajeExito) ?></p>
+    </div>
 <?php endif; ?>
 
 <form action="<?= BASE_URL ?>Empleado/registrarEmpleado" method="POST">

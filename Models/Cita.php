@@ -1,4 +1,5 @@
 <?php
+
 namespace Models;
 
 class Cita
@@ -106,18 +107,26 @@ class Cita
         $this->detalles = $detalles;
     }
 
+    // Validar datos
     public function validarDatos(): array
     {
         $errores = [];
 
-        // 1. Validar la fecha y hora 
+        // Validar la fecha y hora 
         $fechaHoraActual = new \DateTime();
         $fechaHoraCita = \DateTime::createFromFormat('Y-m-d H:i', $this->fecha . ' ' . $this->hora);
+
         if ($fechaHoraCita < $fechaHoraActual) {
-            $errores[] = "La fecha y hora de la cita no pueden ser anteriores al día de hoy.";
+            $errores[] = "La cita no puede ser anterior al día de hoy.";
         }
 
-        // 2. Validar que la hora de la cita esté en el horario permitido 
+        // Validar que la fecha no sea superior a una semana desde la fecha actual
+        $fechaLimite = (clone $fechaHoraActual)->modify('+1 week');
+        if ($fechaHoraCita > $fechaLimite) {
+            $errores[] = "Solo reservamos citas a una semana vista.";
+        }
+
+        // Validar que la hora de la cita esté en el horario de apertura
         $horaCita = (int)substr($this->hora, 0, 2);
         if ($horaCita < 9 || $horaCita > 19) {
             $errores[] = "La hora de la cita debe estar entre las 9:00 AM y las 7:00 PM.";
@@ -126,4 +135,3 @@ class Cita
         return $errores;
     }
 }
-

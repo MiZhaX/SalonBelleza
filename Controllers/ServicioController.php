@@ -14,6 +14,7 @@
             $this->pages = new Pages();
         }
 
+        // Mostrar todos los servicios
         public function mostrarTodos(){
             $servicios = $this->servicioService->obtenerTodos();
 

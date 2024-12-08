@@ -1,10 +1,10 @@
 <h2>Lista de Citas</h2>
 
-<?php if (isset($mensajeExito)): ?>
+<?php if (isset($mensajeExito) && $mensajeExito != ''): ?>
     <div class="exito"><?= htmlspecialchars($mensajeExito) ?></div>
 <?php endif; ?>
 
-<?php if (isset($mensajeError)): ?>
+<?php if (isset($mensajeError)  && $mensajeError != ''): ?>
     <div class="error"><?= htmlspecialchars($mensajeError) ?></div>
 <?php endif; ?>
 
@@ -33,6 +33,13 @@
                 <td><?= htmlspecialchars($cita->getEstado()) ?></td>
                 <td>
                     <a href="<?= BASE_URL ?>Cita/verResumenCita&id=<?= $cita->getId() ?>">Resumen</a>
+                    <?php if ($cita->getEstado() == 'pendiente'): ?>
+                        / <a href="<?= BASE_URL ?>Cita/finalizarCita&id=<?= $cita->getId() ?>">Finalizar</a>
+                        / <a href="<?= BASE_URL ?>Cita/actualizarEstado&id=<?= $cita->getId() ?>&estado=cancelada">Cancelar</a>
+                    <?php endif; ?>
+                    <?php if ($cita->getEstado() != 'pendiente'): ?>
+                        / <a href="<?= BASE_URL ?>Cita/borrarCita&id=<?= $cita->getId() ?>">Borrar</a>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php endforeach; ?>

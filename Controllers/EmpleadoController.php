@@ -23,58 +23,7 @@ class EmpleadoController
         $this->pages = new Pages();
     }
 
-    public function iniciarSesion(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $datos = $_POST;
-            $errores = [];
-
-            // Verificar si los datos requeridos están presentes
-            if (empty($datos['correo'])) {
-                $errores[] = "El correo es obligatorio.";
-            }
-
-            if (empty($datos['password'])) {
-                $errores[] = "La contraseña es obligatoria.";
-            }
-
-            if (empty($errores)) {
-                // Intentar obtener al empleado
-                $empleado = $this->empleadoService->obtenerEmpleadoPorCorreo($datos['correo']);
-
-                if ($empleado && password_verify($datos['password'], $empleado->getPassword())) {
-                    // Iniciar sesión
-                    session_start();
-                    $_SESSION['tipo'] = $empleado->getIdEspecialidad() == 11 ? "administrador" : "empleado";
-                    $_SESSION['nombre'] = $empleado->getNombre();
-                    $_SESSION['id'] = $empleado->getId();
-                    $_SESSION['especialidad'] = $empleado->getIdEspecialidad();
-
-                    // Redirigir al layout principal
-                    $this->pages->render('Layout/principal');
-                    exit;
-                } else {
-                    $errores[] = "Correo o contraseña incorrectos.";
-                }
-            }
-
-            // Mostrar la página de inicio de sesión con errores si los hay
-            $this->pages->render('Empleado/iniciarSesion', ['errores' => $errores]);
-        } else {
-            // Renderizar la página de inicio de sesión sin errores
-            $this->pages->render('Empleado/iniciarSesion');
-        }
-    }
-
-    public function cerrarSesion()
-    {
-        session_start();
-        session_unset();
-        session_destroy();
-
-        $this->pages->render('Layout/principal');
-    }
-
+    // Registrar un empleado
     public function registrarEmpleado(): void
     {
         $errores = [];
@@ -90,7 +39,7 @@ class EmpleadoController
                 'password' => trim($_POST['password']),
             ];
 
-            // Validar los datos en el modelo
+            // Validar los datos 
             $empleado = new Empleado(
                 nombre: $datosSanitizados['nombre'],
                 correo: $datosSanitizados['correo'],
@@ -102,7 +51,7 @@ class EmpleadoController
             $errores = $empleado->validarDatos();
 
             // Verificar si el correo ya está registrado
-            $empleadoExistente = $this->empleadoService->obtenerEmpleadoPorCorreo($datosSanitizados['correo']);
+            $empleadoExistente = $this->empleadoService->obtenerPorCorreo($datosSanitizados['correo']);
             if ($empleadoExistente) {
                 $errores[] = "El correo ya está registrado.";
             }
@@ -113,7 +62,7 @@ class EmpleadoController
                 $passwordCifrada = password_hash($datosSanitizados['password'], PASSWORD_BCRYPT);
                 $empleado->setPassword($passwordCifrada);
 
-                // Intentar crear el empleado
+                // Crear el empleado
                 $resultado = $this->empleadoService->crearEmpleado($empleado);
 
                 if ($resultado) {
@@ -135,6 +84,63 @@ class EmpleadoController
         ]);
     }
 
+    // Iniciar sesión como empleado
+    public function iniciarSesion(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Obtener datos del formulario
+            $datos = $_POST;
+            $errores = [];
+
+            // Verificar que se han introducido los datos
+            if (empty($datos['correo'])) {
+                $errores[] = "El correo es obligatorio.";
+            }
+
+            if (empty($datos['password'])) {
+                $errores[] = "La contraseña es obligatoria.";
+            }
+
+            if (empty($errores)) {
+                // Obtener al empleado por el correo
+                $empleado = $this->empleadoService->obtenerPorCorreo($datos['correo']);
+
+                // Si los datos coinciden
+                if ($empleado && password_verify($datos['password'], $empleado->getPassword())) {
+                    // Iniciar sesión
+                    session_start();
+                    $_SESSION['tipo'] = $empleado->getIdEspecialidad() == 11 ? "administrador" : "empleado";
+                    $_SESSION['nombre'] = $empleado->getNombre();
+                    $_SESSION['id'] = $empleado->getId();
+                    $_SESSION['especialidad'] = $empleado->getIdEspecialidad();
+
+                    // Redirigir a la página principal
+                    $this->pages->render('Layout/principal');
+                    exit;
+                } else {
+                    $errores[] = "Correo o contraseña incorrectos.";
+                }
+            }
+
+            // Mostrar la página de inicio de sesión con errores si los hay
+            $this->pages->render('Empleado/iniciarSesion', ['errores' => $errores]);
+        } else {
+            // Renderizar la página de inicio de sesión sin errores
+            $this->pages->render('Empleado/iniciarSesion');
+        }
+    }
+
+    // Cerrar la sesión
+    public function cerrarSesion()
+    {
+        session_start();
+        session_unset();
+        session_destroy();
+
+        $this->pages->render('Layout/principal');
+    }
+
+    // Obtener todos los empleados de una especialidad (Para programar citas)
     public function obtenerEmpleadosPorEspecialidad(): void
     {
         if (isset($_GET['id_servicio'])) {
@@ -147,7 +153,7 @@ class EmpleadoController
                 $idEspecialidad = $servicio->getIdEspecialidad();
 
                 // Obtener empleados con esa especialidad
-                $empleados = $this->empleadoService->obtenerEmpleadosPorEspecialidad($idEspecialidad);
+                $empleados = $this->empleadoService->obtenerPorEspecialidad($idEspecialidad);
 
                 header('Content-Type: application/json');
                 echo json_encode($empleados);
@@ -161,6 +167,7 @@ class EmpleadoController
         }
     }
 
+    // Mostrar todos los empleados
     public function mostrarTodos(): void
     {
         $empleados = $this->empleadoService->obtenerTodos();
@@ -168,6 +175,7 @@ class EmpleadoController
         $this->pages->render('Empleado/mostrarEmpleados', ['empleados' => $empleados, 'especialidadService' => $this->especialidadService]);
     }
 
+    // Despedir a un empleado
     public function despedirEmpleado(): void
     {
         $mensajeExito = '';

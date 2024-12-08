@@ -15,6 +15,7 @@ class ServicioRepository
         $this->conexion = new BaseDatos();
     }
 
+    // Obtener todos los servicios
     public function obtenerTodos(): array
     {
         $query = $this->conexion->prepare("SELECT * FROM servicios");
@@ -35,6 +36,7 @@ class ServicioRepository
         return $servicios;
     }
 
+    // Obtener un servicio por el id
     public function obtenerPorId(int $id): ?Servicio
     {
         $query = $this->conexion->prepare("SELECT * FROM servicios WHERE id = :id");
@@ -53,35 +55,5 @@ class ServicioRepository
         }
 
         return null;
-    }
-
-    public function crear(Servicio $servicio): bool
-    {
-        $query = $this->conexion->prepare("INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES (:nombre, :precio, :duracion_minutos, :id_especialidad)");
-        $query->bindValue(':nombre', $servicio->getNombre(), PDO::PARAM_STR);
-        $query->bindValue(':precio', $servicio->getPrecio(), PDO::PARAM_STR);
-        $query->bindValue(':duracion_minutos', $servicio->getDuracionMinutos(), PDO::PARAM_INT);
-        $query->bindValue(':id_especialidad', $servicio->getIdEspecialidad(), PDO::PARAM_INT);
-
-        return $query->execute();
-    }
-
-    public function actualizar(Servicio $servicio): bool
-    {
-        $query = $this->conexion->prepare("UPDATE servicios SET nombre = :nombre, precio = :precio, duracion_minutos = :duracion_minutos, id_especialidad = :id_especialidad WHERE id = :id");
-        $query->bindValue(':id', $servicio->getId(), PDO::PARAM_INT);
-        $query->bindValue(':nombre', $servicio->getNombre(), PDO::PARAM_STR);
-        $query->bindValue(':precio', $servicio->getPrecio(), PDO::PARAM_STR);
-        $query->bindValue(':duracion_minutos', $servicio->getDuracionMinutos(), PDO::PARAM_INT);
-        $query->bindValue(':id_especialidad', $servicio->getIdEspecialidad(), PDO::PARAM_INT);
-
-        return $query->execute();
-    }
-
-    public function eliminar(int $id): bool
-    {
-        $query = $this->conexion->prepare("DELETE FROM servicios WHERE id = :id");
-        $query->bindParam(':id', $id, PDO::PARAM_INT);
-        return $query->execute();
     }
 }

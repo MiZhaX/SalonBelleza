@@ -26,6 +26,7 @@ class ClienteRepository
         $clientesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $clientes = [];
 
+        // Crear un nuevo cliente y almacenarlo por cada fila detectada
         foreach ($clientesData as $clienteData) {
             $cliente = new Cliente(
                 id: $clienteData['id'],
@@ -42,83 +43,36 @@ class ClienteRepository
         return $clientes;
     }
 
-    // Obtener cliente por su correo
-    public function obtenerPorCorreo(string $correo): ?Cliente
+    // Obtener datos de un cliente según una columna
+    public function obtenerPorColumna(string $columna, string $valor): ?Cliente
     {
-        $sql = "SELECT * FROM clientes WHERE correo = :correo";
+        $sql = "SELECT * FROM clientes WHERE {$columna} = :valor";
         $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':correo', $correo, PDO::PARAM_STR);
+        $stmt->bindParam(':valor', $valor, PDO::PARAM_STR);
         $stmt->execute();
 
         $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Crear y devolver los datos del cliente encontrado
         if ($resultado) {
-            $cliente = new Cliente();
-            $cliente->setId($resultado['id']);
-            $cliente->setNombre($resultado['nombre']);
-            $cliente->setCorreo($resultado['correo']);
-            $cliente->setTelefono($resultado['telefono']);
-            $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
-            $cliente->setPassword($resultado['password']);
-            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
-            return $cliente;
+            return new Cliente(
+                id: $resultado['id'],
+                nombre: $resultado['nombre'],
+                correo: $resultado['correo'],
+                telefono: $resultado['telefono'],
+                fechaNacimiento: $resultado['fecha_nacimiento'],
+                password: $resultado['password'],
+                tokenConfirmacion: $resultado['token_confirmacion']
+            );
         }
 
         return null;
     }
-
-    public function obtenerClientePorToken(string $token): ?Cliente {
-        $sql = "SELECT * FROM clientes WHERE token_confirmacion = :token";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        $stmt->execute();
-
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($resultado) {
-            $cliente = new Cliente();
-            $cliente->setId($resultado['id']);
-            $cliente->setNombre($resultado['nombre']);
-            $cliente->setCorreo($resultado['correo']);
-            $cliente->setTelefono($resultado['telefono']);
-            $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
-            $cliente->setPassword($resultado['password']);
-            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
-            return $cliente;
-        }
-
-        return null;
-    }
-
-    public function obtenerPorId(string $id): ?Cliente
-    {
-        $sql = "SELECT * FROM clientes WHERE id = :id";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_STR);
-        $stmt->execute();
-
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($resultado) {
-            $cliente = new Cliente();
-            $cliente->setId($resultado['id']);
-            $cliente->setNombre($resultado['nombre']);
-            $cliente->setCorreo($resultado['correo']);
-            $cliente->setTelefono($resultado['telefono']);
-            $cliente->setFechaNacimiento($resultado['fecha_nacimiento']);
-            $cliente->setPassword($resultado['password']);
-            $cliente->setTokenConfirmacion($resultado['token_confirmacion']);
-            return $cliente;
-        }
-
-        return null;
-    }
-
 
     // Insertar un cliente
     public function insertar(Cliente $cliente): bool
     {
-        // Recuperamos los valores en variables
+        // Obtener los datos del cliente
         $nombre = $cliente->getNombre();
         $correo = $cliente->getCorreo();
         $telefono = $cliente->getTelefono();
@@ -126,14 +80,12 @@ class ClienteRepository
         $password = $cliente->getPassword();
         $token = $cliente->getTokenConfirmacion();
 
-        // Preparar la consulta SQL
         $sql = "INSERT INTO clientes (nombre, correo, telefono, fecha_nacimiento, password, token_confirmacion) 
             VALUES (:nombre, :correo, :telefono, :fecha_nacimiento, :password, :token)";
 
-        // Preparamos la sentencia
         $stmt = $this->conexion->prepare($sql);
 
-        // Enlazamos las variables
+        // Enlazar los parametros con los valores del Cliente
         $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
         $stmt->bindParam(':correo', $correo, PDO::PARAM_STR);
         $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
@@ -141,10 +93,8 @@ class ClienteRepository
         $stmt->bindParam(':password', $password, PDO::PARAM_STR);
         $stmt->bindParam(':token', $token, PDO::PARAM_STR);
 
-        // Ejecutamos la consulta
         return $stmt->execute();
     }
-
 
     // Actualizar un cliente
     public function actualizar(Cliente $cliente): bool
@@ -173,12 +123,14 @@ class ClienteRepository
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
-    }  
-    
-    public function activarCuenta(Cliente $cliente): bool {
+    }
+
+    // Actualizar el token de un cliente (Activar cuenta)
+    public function activarCuenta(Cliente $cliente): bool
+    {
         $query = "UPDATE clientes SET token_confirmacion = NULL WHERE id = :id";
         $stmt = $this->conexion->prepare($query);
         $stmt->bindValue(':id', $cliente->getId());
         return $stmt->execute();
-    }    
+    }
 }

@@ -44,12 +44,12 @@
                         <a href="<?= BASE_URL ?>Cita/verResumenCita&id=<?= $cita->getId() ?>">Resumen</a>
                         <?php if ($cita->getEstado() == 'pendiente'): ?>
                             <?php if ($_SESSION['tipo'] === 'empleado'): ?>
-                                <a href="<?= BASE_URL ?>Cita/finalizarCita&id=<?= $cita->getId() ?>">Finalizar</a>
+                                 / <a href="<?= BASE_URL ?>Cita/finalizarCita&id=<?= $cita->getId() ?>">Finalizar</a>
                             <?php endif; ?>
-                            <a href="<?= BASE_URL ?>Cita/actualizarEstado&id=<?= $cita->getId() ?>&estado=cancelada">Cancelar</a>
+                             / <a href="<?= BASE_URL ?>Cita/actualizarEstado&id=<?= $cita->getId() ?>&estado=cancelada">Cancelar</a>
                         <?php endif; ?>
                         <?php if ($cita->getEstado() == 'cancelada' && $_SESSION['tipo'] === 'empleado'): ?>
-                            <a href="<?= BASE_URL ?>Cita/borrarCita&id=<?= $cita->getId() ?>">Borrar</a>
+                             / <a href="<?= BASE_URL ?>Cita/borrarCita&id=<?= $cita->getId() ?>">Borrar</a>
                         <?php endif; ?>
                     </td>
                 </tr>

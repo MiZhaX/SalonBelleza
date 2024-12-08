@@ -14,35 +14,41 @@ class EmpleadoService
         $this->empleadoRepository = new EmpleadoRepository();
     }
 
+    // Obtener todos los empleados
     public function obtenerTodos(): array
     {
         return $this->empleadoRepository->obtenerTodos();
     }
 
-    public function obtenerEmpleadoPorCorreo(string $correo): ?Empleado
+    // Obtener todos los empleados por de una especialidad
+    public function obtenerPorEspecialidad(int $idEspecialidad): array
     {
-        return $this->empleadoRepository->obtenerPorCorreo($correo);
+        return $this->empleadoRepository->obtenerTodosPorEspecialidad($idEspecialidad);
     }
 
+    // Obtener un empleado por su correo
+    public function obtenerPorCorreo(string $correo): ?Empleado
+    {
+        return $this->empleadoRepository->obtenerPorColumna('correo', $correo);
+    }
+
+    // Obtener un empleado por su id
     public function obtenerPorId(int $id): ?Empleado
     {
-        return $this->empleadoRepository->obtenerPorId($id);
+        return $this->empleadoRepository->obtenerPorColumna('id', $id);
     }
 
+    // Registrar un empleado
     public function crearEmpleado(Empleado $empleado): bool
     {
         return $this->empleadoRepository->insertar($empleado);
     }
 
-    public function obtenerEmpleadosPorEspecialidad(int $idEspecialidad): array
-    {
-        return $this->empleadoRepository->obtenerPorEspecialidad($idEspecialidad);
-    }
-
+    // Despedir a un empleado
     public function despedirEmpleado(int $idEmpleado): bool
     {
         // Verificar si el empleado existe antes de intentar despedirlo
-        $empleado = $this->empleadoRepository->obtenerPorId($idEmpleado);
+        $empleado = $this->empleadoRepository->obtenerPorColumna('id', $idEmpleado);
 
         if (!$empleado) {
             return false; // No se encontró el empleado
