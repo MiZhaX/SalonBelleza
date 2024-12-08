@@ -96,6 +96,11 @@ class CitaService
         ];
     }
 
+    public function obtenerCorreoClientePorId(string $id): string
+    {
+        return $this->clienteService->obtenerPorId($id)->getCorreo();
+    }
+
     public function validarDatosCita(Cita $cita): array
     {
         $errores = $cita->validarDatos(); // Validación interna del modelo

@@ -45,10 +45,12 @@
     <?php endif; ?>
 </table>
 
-<?php if ($_SESSION['tipo'] === 'empleado'): ?>
-    <a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Volver a mis citas</a>
-<?php elseif ($_SESSION['tipo'] === 'administrador'): ?>
-    <a href="<?= BASE_URL ?>Cita/mostrarTodos">Ver todas las citas</a>
-<?php else: ?>
-    <a href="<?= BASE_URL ?>Cita/verCitasCliente">Volver a mis citas</a>
+<?php if (isset($_SESSION['tipo'])): ?>
+    <?php if ($_SESSION['tipo'] === 'empleado'): ?>
+        <a href="<?= BASE_URL ?>Cita/verCitasEmpleado">Volver a mis citas</a>
+    <?php elseif ($_SESSION['tipo'] === 'administrador'): ?>
+        <a href="<?= BASE_URL ?>Cita/mostrarTodos">Ver todas las citas</a>
+    <?php else: ?>
+        <a href="<?= BASE_URL ?>Cita/verCitasCliente">Volver a mis citas</a>
+    <?php endif; ?>
 <?php endif; ?>

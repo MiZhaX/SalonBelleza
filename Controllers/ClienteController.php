@@ -146,8 +146,8 @@ class ClienteController
         $mail->Port = 465;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->SMTPAuth = true;
-        $mail->Username = 'mbonelortiz@gmail.com'; // Cambia por tu correo
-        $mail->Password = 'vwkdgauvdbsrlfid'; // Cambia por tu contraseña
+        $mail->Username = 'mbonelortiz@gmail.com'; 
+        $mail->Password = 'vwkdgauvdbsrlfid'; 
         $mail->setFrom('mbonelortiz@gmail.com', 'SalónDeBelleza');
         $mail->addAddress($correo);
         $mail->Subject = $asunto;
