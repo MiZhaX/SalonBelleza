@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'mishael-bonel/salon-belleza',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => '85a3aa0f514e4f3ad0fc75a817e0a2702a88dfe9',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '2c9287bcf6f73595cde0381b63579542fa2b7e6d',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'mishael-bonel/salon-belleza' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => '85a3aa0f514e4f3ad0fc75a817e0a2702a88dfe9',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '2c9287bcf6f73595cde0381b63579542fa2b7e6d',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

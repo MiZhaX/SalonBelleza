@@ -156,7 +156,7 @@ class ClienteController
         $mail->SMTPAuth = true;
         $mail->Username = EMAIL_DIR;
         $mail->Password = EMAIL_PASS;
-        $mail->setFrom(EMAIL_DIR, 'SalónDeBelleza');
+        $mail->setFrom(EMAIL_DIR, 'SalonDeBelleza');
         $mail->addAddress($correo);
         $mail->Subject = $asunto;
         $mail->msgHTML($mensaje);

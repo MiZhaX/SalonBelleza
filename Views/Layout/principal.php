@@ -14,8 +14,7 @@
 <?php else: ?>
     <h2>Bienvenido, <?= htmlspecialchars($_SESSION['nombre']) ?>.</h2>
     <ul>
-    <li>
-        <a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
+        <li><a href="<?= BASE_URL ?>Cita/programarCita">Programar cita</a></li>
         <?php if ($_SESSION['tipo'] === 'administrador'): ?>
             <li><a href="<?= BASE_URL ?>Empleado/registrarEmpleado">Registrar nuevo empleado</a></li>
             <li><a href="<?= BASE_URL ?>Cliente/crearCliente">Registrar nuevo cliente</a></li>

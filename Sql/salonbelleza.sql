@@ -1,4 +1,4 @@
--- Active: 1731922560437@@127.0.0.1@3306@salonbelleza
+-- Active: 1733816735753@@127.0.0.1@3306@salonbelleza
 DROP DATABASE IF EXISTS salonbelleza;
 CREATE DATABASE IF NOT EXISTS salonbelleza;
 SET NAMES utf8mb4;

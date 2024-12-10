@@ -27,11 +27,6 @@ a:hover {
     transform: scale(1.2);
 }
 
-/* Estilo para enlaces visitados */
-a:visited {
-    color: #6c757d;
-}
-
 /* Enlaces dentro de listas */
 li{
     transition: transform 0.3s ease, color 0.3s ease;
@@ -43,13 +38,13 @@ li:hover{
 }
 
 li a {
-    color: #007bff;
+    color: #6c757d;
     text-decoration: none;
     font-weight: bold;
 }
 
 td a:hover{
-    color: #007bff;
+    color: #0056b3;
 }
 
 
