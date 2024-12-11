@@ -110,6 +110,6 @@ INSERT INTO servicios (nombre, precio, duracion_minutos, id_especialidad) VALUES
 ('Maquillaje de Novia', 80.00, 120, 9),-- Maquillaje
 ('Asesoría de Imagen', 60.00, 90, 10); -- Asesoría de Imagen
 
--- Crear el empleado administrador 
+-- Crear el empleado administrador (PASSWORD: adminpass)
 INSERT INTO empleados (nombre, correo, telefono, password, id_especialidad) VALUES 
 ('Mishael', 'mishael@admin.com', '679465823', '$2y$10$fUHVcqctZiZvA3aO1pZHt.kR8AWYPj9wU4Wz/8L88toLHPASxTAeq', 11); -- Contraseña: adminpass
