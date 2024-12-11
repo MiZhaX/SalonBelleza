@@ -378,9 +378,9 @@ class CitaController
         $mail->Port = 465;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->SMTPAuth = true;
-        $mail->Username = EMAIL_DIR;
-        $mail->Password = EMAIL_PASS;
-        $mail->setFrom(EMAIL_DIR, 'SalonDeBelleza');
+        $mail->Username = $_ENV['EMAIL_DIR'];
+        $mail->Password = $_ENV['EMAIL_PASS'];
+        $mail->setFrom($_ENV['EMAIL_DIR'], 'SalonDeBelleza');
         $mail->addAddress($correo);
         $mail->Subject = $asunto;
         $mail->msgHTML($mensaje);

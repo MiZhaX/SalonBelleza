@@ -8,15 +8,19 @@ use PDOException;
 class BaseDatos
 {
     private PDO $conexion;
-    private mixed $resultado;
-
-    public function __construct(
-        private $tipo_de_base = 'mysql',
-        private string $servidor = SERVERNAME,
-        private string $usuario = USERNAME,
-        private string $pass = PASSWORD,
-        private string $base_datos = DATABASE
-    ) {
+    private string $tipo_de_base;
+    private string $servidor;
+    private string $usuario;
+    private string $pass;
+    private string $base_datos;
+    
+    public function __construct() 
+    {
+        $this->tipo_de_base = 'mysql';
+        $this->servidor = $_ENV['SERVERNAME'];
+        $this->usuario = $_ENV['USERNAME'];
+        $this->pass = $_ENV['PASSWORD'];
+        $this->base_datos = $_ENV['DATABASE'];
         $this->conexion = $this->conectar();
     }
 

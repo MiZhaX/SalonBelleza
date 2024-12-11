@@ -1,7 +1,6 @@
 <IfModule mod_rewrite.c>
     # Activar rewrite
     RewriteEngine on
-    # ErrorDocument 404 http://Agenda/Error/show_error404
 
     RewriteCond %{SCRIPT_FILENAME} !-d
     RewriteCond %{SCRIPT_FILENAME} !-f
