@@ -4,6 +4,10 @@ CREATE DATABASE IF NOT EXISTS salonbelleza;
 SET NAMES utf8mb4;
 USE salonbelleza;
 
+-- Crear usuario admin para la base de datos
+CREATE USER 'adminBelleza'@'localhost' IDENTIFIED BY 'SalonBellezaAdmin';
+GRANT ALL PRIVILEGES ON * . * TO 'adminBelleza'@'localhost';
+
 -- Tabla de clientes
 DROP TABLE IF EXISTS clientes;
 CREATE TABLE IF NOT EXISTS clientes (
